@@ -1,0 +1,397 @@
+/* ==========================================================
+   STYLE.CSS - Alpro C++ Case Studies Blog & Repository
+   ========================================================== */
+
+:root {
+  --primary-gradient: linear-gradient(135deg, #2563eb, #7c3aed);
+  --hero-bg-light: linear-gradient(135deg, #f0f7ff 0%, #f5f3ff 100%);
+  --hero-bg-dark: linear-gradient(135deg, #0b132b 0%, #1c2541 100%);
+  --card-hover-transform: translateY(-5px);
+  --card-transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --terminal-bg: #1e1e2e;
+  --terminal-bar: #181825;
+  --font-code: "Fira Code", "Cascadia Code", Consolas, Monaco, "Courier New", monospace;
+}
+
+/* Base & Typography */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+/* Glassmorphism Navbar */
+.navbar-custom {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  transition: background-color 0.3s ease;
+}
+
+[data-bs-theme="light"] .navbar-custom {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-bs-theme="dark"] .navbar-custom {
+  background-color: rgba(15, 23, 42, 0.88);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-gradient);
+  color: white;
+  border-radius: 10px;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 4rem 0 3rem;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-bs-theme="light"] .hero-section {
+  background: var(--hero-bg-light);
+}
+
+[data-bs-theme="dark"] .hero-section {
+  background: var(--hero-bg-dark);
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.hero-badge {
+  font-size: 0.825rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 50rem;
+}
+
+.hero-title {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.text-gradient {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Stat Cards */
+.stat-box {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  padding: 1.25rem;
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease;
+}
+
+[data-bs-theme="dark"] .stat-box {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.stat-box:hover {
+  transform: translateY(-2px);
+}
+
+/* Category Pills & Filters */
+.category-btn {
+  border-radius: 50rem;
+  padding: 0.4rem 1.1rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.category-btn.active {
+  background: var(--primary-gradient);
+  color: white !important;
+  border-color: transparent;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
+}
+
+/* Case Study Cards */
+.case-card {
+  border-radius: 16px;
+  transition: var(--card-transition);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bs-card-bg);
+  overflow: hidden;
+}
+
+[data-bs-theme="dark"] .case-card {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.case-card:hover {
+  transform: var(--card-hover-transform);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
+  border-color: #6366f1;
+}
+
+[data-bs-theme="dark"] .case-card:hover {
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.4);
+  border-color: #818cf8;
+}
+
+.case-card .card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+
+.case-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 0.6rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.case-summary {
+  font-size: 0.925rem;
+  color: var(--bs-secondary-color);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.case-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: auto;
+  margin-bottom: 1rem;
+}
+
+.tag-badge {
+  font-size: 0.75rem;
+  background-color: rgba(99, 102, 241, 0.1);
+  color: #4f46e5;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-family: var(--font-code);
+}
+
+[data-bs-theme="dark"] .tag-badge {
+  background-color: rgba(129, 140, 248, 0.15);
+  color: #a5b4fc;
+}
+
+/* Difficulty Badges */
+.badge-diff-mudah {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+[data-bs-theme="dark"] .badge-diff-mudah {
+  color: #4ade80;
+}
+
+.badge-diff-menengah {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+[data-bs-theme="dark"] .badge-diff-menengah {
+  color: #fbbf24;
+}
+
+.badge-diff-sulit {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+[data-bs-theme="dark"] .badge-diff-sulit {
+  color: #f87171;
+}
+
+/* Terminal Mockup Window */
+.terminal-window {
+  background: var(--terminal-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.terminal-header {
+  background: var(--terminal-bar);
+  padding: 0.55rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.terminal-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.terminal-dot.red { background-color: #ff5f56; }
+.terminal-dot.yellow { background-color: #ffbd2e; }
+.terminal-dot.green { background-color: #27c93f; }
+
+.terminal-title {
+  color: #a6adc8;
+  font-size: 0.8rem;
+  font-family: var(--font-code);
+  font-weight: 500;
+}
+
+.terminal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.terminal-body {
+  padding: 1rem;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.terminal-body pre {
+  margin: 0;
+  font-family: var(--font-code);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.output-console {
+  background: #11111b;
+  color: #a6e3a1;
+  font-family: var(--font-code);
+  font-size: 0.88rem;
+  padding: 1.1rem;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.45;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Pseudocode Box */
+.pseudocode-box {
+  background-color: rgba(99, 102, 241, 0.04);
+  border-left: 4px solid #6366f1;
+  border-radius: 0 8px 8px 0;
+  padding: 1rem;
+  font-family: var(--font-code);
+  font-size: 0.88rem;
+  white-space: pre-wrap;
+}
+
+[data-bs-theme="dark"] .pseudocode-box {
+  background-color: rgba(99, 102, 241, 0.08);
+  border-left-color: #818cf8;
+}
+
+/* Copy button */
+.btn-copy-code {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cdd6f4;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.78rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-copy-code:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 3.5rem;
+  color: var(--bs-secondary-color);
+  opacity: 0.5;
+  margin-bottom: 1rem;
+}
+
+/* Custom Scrollbar for Code */
+.terminal-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.terminal-body::-webkit-scrollbar-track {
+  background: #181825;
+}
+
+.terminal-body::-webkit-scrollbar-thumb {
+  background: #45475a;
+  border-radius: 4px;
+}
+
+.terminal-body::-webkit-scrollbar-thumb:hover {
+  background: #585b70;
+}
+
+/* Modal Customization */
+.modal-detail .modal-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-bs-theme="dark"] .modal-detail .modal-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Footer */
+footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-bs-theme="dark"] footer {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
