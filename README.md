@@ -1,92 +1,74 @@
-# Alpro C++ Vault - Blog & Repositori Studi Kasus Algoritma dan Pemrograman
+# 📚 Blog & Repositori Studi Kasus Algoritma dan Pemrograman (C++)
 
-Aplikasi web blog interaktif berbasis **HTML5**, **CSS3 (Bootstrap 5.3)**, dan **JavaScript (ES6)** untuk mendokumentasikan, mempelajari, dan menyimpan studi kasus mata kuliah **Algoritma dan Pemrograman (Alpro)** dengan implementasi bahasa **C++**.
+Aplikasi web modern berbasis **HTML5, CSS (Bootstrap 5.3), dan JavaScript** untuk mendokumentasikan, mengarsipkan, serta mempelajari kumpulan studi kasus **Algoritma dan Pemrograman (ALPRO) menggunakan bahasa C++**.
 
----
-
-## 🌟 Fitur Utama
-
-1. **8 Koleksi Studi Kasus C++ Siap Pakai**:
-   - **Kasus 01**: Sistem Kasir & Diskon Bertingkat Toko Swalayan *(Percabangan / If-Else)*
-   - **Kasus 02**: Simulasi Tarif Parkir Mall & Validasi Durasi *(Percabangan / Switch-Case)*
-   - **Kasus 03**: Pola Piramida Angka & Bintang Bersarang *(Nested Loops / Perulangan)*
-   - **Kasus 04**: Statistik Nilai Ujian Mahasiswa & Indeks Kelulusan *(Array 1 Dimensi)*
-   - **Kasus 05**: Operasi Perkalian Matriks 2 Dimensi *(Array 2 Dimensi / Matrix Multiplication)*
-   - **Kasus 06**: Sistem Manajemen Inventaris Barang Gudang *(Struct & Array of Struct)*
-   - **Kasus 07**: Algoritma Bubble Sort & Binary Search pada Data Terurut *(Sorting & Searching)*
-   - **Kasus 08**: Deret Bilangan Fibonacci & Faktorial Rekursif *(Fungsi Rekursif)*
-
-2. **Detail Komprehensif Tiap Studi Kasus**:
-   - **Problem Statement**: Penjelasan naratif kasus dunia nyata.
-   - **Spesifikasi Input & Output**: Format data masukan dan luaran.
-   - **Pseudocode**: Alur logika sistematis sebelum diterjemahkan ke kode program.
-   - **C++ Source Code Viewer**: Dilengkapi syntax highlighting (`Prism.js`) gaya Okaidia / Dark Developer Theme dengan nomor baris.
-   - **Tombol 1-Klik Salin Kode**: Memudahkan mahasiswa menyalin kode ke compiler (Code::Blocks, Dev-C++, VS Code, dll).
-   - **Simulasi Terminal Output**: Tampilan mock console hijau/hitam sesuai output eksekusi C++.
-
-3. **Live Search & Filter Multifungsi**:
-   - Pencarian instan (live search) berdasarkan judul, kata kunci, tag, pseudocode, maupun sintaks C++.
-   - Filter berdasarkan Kategori / Bab (*Percabangan, Perulangan, Array, Struct, Algoritma, Rekursif*).
-   - Filter berdasarkan Tingkat Kesulitan (*Mudah, Menengah, Sulit*).
-
-4. **Penyimpanan Lokal (LocalStorage CRUD)**:
-   - Pengguna dapat menambahkan studi kasus baru secara mandiri melalui tombol **"Tambah Kasus"**.
-   - Edit dan Hapus studi kasus langsung dari browser.
-   - Data tersimpan persisten di `localStorage` peramban.
-
-5. **Fitur Ekspor & Impor Data (JSON)**:
-   - Ekspor seluruh koleksi kasus ke file `.json` untuk backup atau pengumpulan tugas UTS.
-   - Impor file `.json` untuk memuat kasus dari teman atau dosen.
-   - Tombol **"Reset ke Data Bawaan"** untuk mengembalikan data awal kapan saja.
-
-6. **Tampilan Modern & Dark / Light Mode Switcher**:
-   - Transisi halus antara tema terang (Light) dan gelap (Dark) yang ramah mata.
-   - Desain responsif di layar Smartphone, Tablet, hingga Desktop/Laptop.
+Cocok digunakan untuk dokumentasi praktikum perkuliahan, portofolio pemrograman, maupun penyelesaian tugas/ujian tengah semester (UTS).
 
 ---
 
-## 📂 Struktur Berkas
+## ✨ Fitur Utama
+
+1. **Koleksi Studi Kasus C++ Siap Pakai**:
+   - 🛒 **Sistem Kasir & Diskon Bertingkat** *(Percabangan & Array)*
+   - 📊 **Manajemen & Pengurutan Nilai Mahasiswa** *(Bubble Sort & Struct)*
+   - 🔍 **Pencarian ID Produk: Linear vs Binary Search** *(Kompleksitas $O(n)$ vs $O(\log n)$)*
+   - 🎮 **Tic-Tac-Toe Console Game** *(Array 2D & Logika Matriks)*
+   - 🗼 **Simulasi Menara Hanoi & FPB Euclidean** *(Fungsi Rekursif)*
+
+2. **Detail Komprehensif Setiap Kasus**:
+   - **Deskripsi Masalah**: Latar belakang studi kasus nyata/bisnis.
+   - **Langkah Algoritma / Pseudocode**: Alur pemecahan masalah langkah demi langkah.
+   - **Source Code C++ Berwarna**: Dilengkapi sintaks berwarna menggunakan **Prism.js**.
+   - **Tombol Salin Kode (Copy-to-Clipboard)**: Salin source code dalam sekali klik.
+   - **Terminal Simulasi**: Preview hasil eksekusi program di layar console/terminal.
+
+3. **Pencarian & Penyaringan Realtime**:
+   - Pencarian instan berdasarkan judul, kata kunci, tagar, ataupun kode.
+   - Filter berdasarkan kategori topik algoritma.
+   - Filter berdasarkan tingkat kesulitan (*Mudah, Menengah, Lanjutan*).
+
+4. **Fitur CRUD Mandiri (Client-Side Storage)**:
+   - Tambah studi kasus baru buatan sendiri melalui form modal interaktif.
+   - Edit atau hapus studi kasus kapan saja.
+   - Data otomatis tersimpan di peramban web (*LocalStorage*), tidak akan hilang saat halaman di-refresh.
+   - **Export / Import JSON**: Fitur backup dan pulihkan database studi kasus.
+   - Reset ke data bawaan kapan pun diperlukan.
+
+5. **Antarmuka Modern & Responsif**:
+   - Mendukung **Mode Gelap (Dark Mode)** dan **Mode Terang (Light Mode)**.
+   - Dibuat dengan Bootstrap 5.3 dan ikon Bootstrap Icons yang ramah perangkat seluler (HP) maupun desktop.
+   - Bagian **Profil UTS Mahasiswa** yang dapat diubah sesuai nama & NIM.
+
+---
+
+## 📁 Struktur Berkas
 
 ```
-c:\xampp\htdocs\uts\uts_alpro\
-│
-├── index.html              # Halaman utama aplikasi blog (Bootstrap 5 + Modal + Layout)
-├── README.md               # Dokumentasi proyek
-│
-└── assets/
-    ├── css/
-    │   └── style.css       # Styling kustom (Glassmorphism, Terminal Window, Badges, Dark Theme)
-    └── js/
-        ├── data.js         # Dataset bawaan 8 studi kasus Alpro C++ lengkap
-        └── app.js          # Logika aplikasi, state management, filter, LocalStorage CRUD, theme
+UTS-ALPRO/
+├── index.html          # Halaman utama aplikasi blog studi kasus
+├── css/
+│   └── style.css       # Kustomisasi styling, dark mode, terminal mockup & animasi
+├── js/
+│   ├── data.js         # Dataset awal studi kasus algoritma & C++
+│   └── app.js          # Logika aplikasi (CRUD LocalStorage, filter, copy code, dll.)
+└── README.md           # Dokumentasi proyek
 ```
 
 ---
 
-## 🚀 Cara Menjalankan Proyek
+## 🚀 Cara Menjalankan
 
-### Opsi 1: Menggunakan Apache XAMPP (Direkomendasikan)
-1. Buka aplikasi **XAMPP Control Panel**.
-2. Klik tombol **Start** pada modul **Apache**.
-3. Buka peramban (Google Chrome, Edge, Firefox, dll).
-4. Akses URL berikut:
-   ```text
-   http://localhost/uts/uts_alpro/
-   ```
+Tidak memerlukan instalasi server backend khusus (seperti PHP/Node.js/Database SQL). Aplikasi ini murni berjalan di sisi peramban web (*client-side*).
 
-### Opsi 2: Buka Langsung Berkas HTML
-Anda juga dapat membuka berkas `index.html` langsung dengan klik dua kali (double click) dari File Explorer:
-`c:\xampp\htdocs\uts\uts_alpro\index.html`.
+1. Buka folder `c:\Users\Aqila\OneDrive\Desktop\UTS-ALPRO` di File Explorer.
+2. Klik ganda pada berkas **`index.html`** untuk membukanya di browser favorit Anda (Google Chrome, Microsoft Edge, Firefox, dll).
+3. Anda dapat langsung membaca studi kasus, menyalin kodenya, atau menambahkan studi kasus C++ baru!
 
 ---
 
 ## 🛠️ Teknologi yang Digunakan
-- **HTML5**: Semantik dan struktur dokumen modern.
-- **CSS3 & Bootstrap 5.3.3**: Framework CSS responsif dan utilitas modern.
-- **Bootstrap Icons 1.11.3**: Ikon antarmuka web.
-- **JavaScript (ES6+)**: Logika filter, manipulasi DOM, dan penyimpanan lokal.
-- **Prism.js**: Library syntax highlighting untuk bahasa pemrograman C++.
-- **SweetAlert2**: Notifikasi toast dan modal dialog interaktif yang elegan.
-
----
-*Dibuat untuk Tugas Proyek UTS Mata Kuliah Algoritma dan Pemrograman (C++)*
+- **HTML5**: Struktur semantik halaman web.
+- **CSS3 & Bootstrap 5.3.3**: Tata letak responsif, kartu komponen, modal dialog, dan grid.
+- **Bootstrap Icons 1.11.3**: Ikon visual interaktif.
+- **Prism.js**: Pewarnaan sintaks (*syntax highlighting*) kode C++.
+- **JavaScript (ES6+)**: Logika filter, pencarian, manipulasi DOM, dan penyimpanan lokal (*LocalStorage*).
