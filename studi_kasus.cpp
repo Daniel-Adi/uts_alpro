@@ -1,3 +1,8 @@
+// STUDI KASUS 08 - SISTEM BIAYA PENGGUNAAN LABORATORIUM
+// PROGRAM TERINTEGRASI = MODUL A (Proses Utama) + MODUL B (Rekapitulasi)
+// Memproses beberapa kelompok pengguna (perulangan), menampilkan rincian biaya
+// tiap kelompok, lalu menampilkan rekapitulasi laboratorium.
+
 #include <iostream>
 #include <string>
 #include <iomanip>
@@ -6,13 +11,17 @@
 using namespace std;
 
 int main() {
-    const double TARIF_AWAL     = 50000.0;
-    const double TARIF_LANJUT   = 35000.0;
-    const double PERSEN_WEEKEND = 0.25;
-    const double PERSEN_DISKON  = 0.15;
-    const double DENDA_RINGAN   = 100000.0;
-    const double DENDA_BERAT    = 500000.0;
+    // ===== Konstanta ketentuan studi kasus =====
+    const double TARIF_JAM_AWAL    = 50000.0;  // tarif per jam untuk 2 jam pertama
+    const double TARIF_JAM_LANJUT  = 35000.0;  // tarif per jam setelah 2 jam pertama
+    const double BATAS_JAM_AWAL    = 2.0;      // batas jam bertarif awal
+    const double PERSEN_WEEKEND    = 0.25;     // tambahan akhir pekan 25%
+    const double PERSEN_DISKON     = 0.15;     // diskon pengguna internal 15%
+    const double DENDA_RINGAN      = 100000.0; // denda kerusakan ringan
+    const double DENDA_BERAT       = 500000.0; // denda kerusakan berat
+    const double BATAS_DURASI_MAKS = 24.0;     // batas logis durasi (1 hari)
 
+    // ===== Variabel rekapitulasi (Modul B) =====
     int    jumlahInternal    = 0;
     int    jumlahEksternal   = 0;
     double totalJam          = 0.0;
@@ -24,7 +33,6 @@ int main() {
     double totalPendapatan   = 0.0;
 
     char ulang;
-    bool pertamaKali = true;
 
     cout << "==================================================\n";
     cout << "     SISTEM BIAYA PENGGUNAAN LABORATORIUM\n";
@@ -32,22 +40,17 @@ int main() {
 
     do {
         string namaKelompok;
-        int    jenisPengguna;
+        int    jenisPengguna, hari, statusKerusakan;
         double durasi;
-        int    hari;
-        int    statusKerusakan;
         bool   valid;
 
-        if (!pertamaKali) {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        }
-        pertamaKali = false;
-
+        // ================= MODUL A : PROSES UTAMA =================
+        // ----- Input data kelompok (dengan validasi) -----
         cout << "\n--- INPUT DATA KELOMPOK ---\n";
         cout << "Nama Kelompok: ";
         getline(cin, namaKelompok);
         while (namaKelompok.empty()) {
-            cout << "  [!] Nama tidak boleh kosong. Ulangi: ";
+            cout << "  [!] Nama kelompok tidak boleh kosong. Ulangi: ";
             getline(cin, namaKelompok);
         }
 
@@ -66,10 +69,10 @@ int main() {
 
         valid = false;
         while (!valid) {
-            cout << "Durasi Penggunaan (jam): ";
+            cout << "Durasi Penggunaan (jam, maksimal 24): ";
             if (cin >> durasi) {
-                if (durasi > 0) valid = true;
-                else cout << "  [!] Durasi harus lebih dari 0.\n";
+                if (durasi > 0 && durasi <= BATAS_DURASI_MAKS) valid = true;
+                else cout << "  [!] Durasi harus lebih dari 0 dan maksimal 24 jam.\n";
             } else {
                 cout << "  [!] Input harus berupa angka.\n";
                 cin.clear();
@@ -103,42 +106,58 @@ int main() {
             }
         }
 
+        // ----- Proses perhitungan biaya -----
+        // 1) Biaya dasar: 2 jam pertama Rp50.000/jam, jam berikutnya Rp35.000/jam
         double biayaDasar;
-        if (durasi <= 2) biayaDasar = durasi * TARIF_AWAL;
-        else             biayaDasar = (2 * TARIF_AWAL) + ((durasi - 2) * TARIF_LANJUT);
+        if (durasi <= BATAS_JAM_AWAL) {
+            biayaDasar = durasi * TARIF_JAM_AWAL;
+        } else {
+            biayaDasar = (BATAS_JAM_AWAL * TARIF_JAM_AWAL)
+                       + ((durasi - BATAS_JAM_AWAL) * TARIF_JAM_LANJUT);
+        }
 
+        // 2) Tambahan 25% jika dipakai pada akhir pekan
         double tambahanWeekend = 0;
-        if (hari == 2) tambahanWeekend = biayaDasar * PERSEN_WEEKEND;
-
+        if (hari == 2) {
+            tambahanWeekend = biayaDasar * PERSEN_WEEKEND;
+        }
         double subtotalPenggunaan = biayaDasar + tambahanWeekend;
 
+        // 3) Diskon 15% hanya untuk pengguna internal, dihitung dari biaya penggunaan
         double diskon = 0;
-        if (jenisPengguna == 1) diskon = subtotalPenggunaan * PERSEN_DISKON;
-
+        if (jenisPengguna == 1) {
+            diskon = subtotalPenggunaan * PERSEN_DISKON;
+        }
         double biayaSetelahDiskon = subtotalPenggunaan - diskon;
 
+        // 4) Denda kerusakan (TIDAK terkena diskon)
         double denda = 0;
-        if      (statusKerusakan == 1) denda = DENDA_RINGAN;
-        else if (statusKerusakan == 2) denda = DENDA_BERAT;
+        if (statusKerusakan == 1) {
+            denda = DENDA_RINGAN;
+        } else if (statusKerusakan == 2) {
+            denda = DENDA_BERAT;
+        }
 
+        // 5) Total biaya = biaya setelah diskon + denda
         double totalBiaya = biayaSetelahDiskon + denda;
 
+        // ----- Tampilkan rincian biaya -----
+        cout << fixed << setprecision(2);
         cout << "\n==================================================\n";
         cout << "  RINCIAN BIAYA : " << namaKelompok << "\n";
         cout << "==================================================\n";
-        cout << fixed << setprecision(2);
         cout << "Jenis Pengguna       : "
              << (jenisPengguna == 1 ? "Internal" : "Eksternal") << "\n";
         cout << "Durasi               : " << durasi << " jam\n";
         cout << "Hari                 : "
              << (hari == 1 ? "Hari Kerja" : "Akhir Pekan") << "\n";
         cout << "Status Kerusakan     : ";
-        if      (statusKerusakan == 0) cout << "Tidak Ada\n";
+        if (statusKerusakan == 0)      cout << "Tidak Ada\n";
         else if (statusKerusakan == 1) cout << "Ringan\n";
         else                           cout << "Berat\n";
         cout << "--------------------------------------------------\n";
         cout << "Biaya Dasar          : Rp " << biayaDasar         << "\n";
-        cout << "Tambahan Weekend     : Rp " << tambahanWeekend    << "\n";
+        cout << "Tambahan Weekend 25% : Rp " << tambahanWeekend    << "\n";
         cout << "Subtotal Penggunaan  : Rp " << subtotalPenggunaan << "\n";
         cout << "Diskon Internal 15%  : Rp " << diskon             << "\n";
         cout << "Biaya Setelah Diskon : Rp " << biayaSetelahDiskon << "\n";
@@ -147,45 +166,55 @@ int main() {
         cout << "TOTAL BIAYA          : Rp " << totalBiaya         << "\n";
         cout << "==================================================\n";
 
+        // ================= MODUL B : PENGUMPULAN DATA REKAPITULASI =================
         if (jenisPengguna == 1) jumlahInternal++;
         else                    jumlahEksternal++;
 
         totalJam = totalJam + durasi;
+
         if (hari == 2) jumlahWeekend++;
-        if      (statusKerusakan == 1) jumlahRusakRingan++;
+
+        if (statusKerusakan == 1)      jumlahRusakRingan++;
         else if (statusKerusakan == 2) jumlahRusakBerat++;
 
         totalDiskon     = totalDiskon     + diskon;
         totalDenda      = totalDenda      + denda;
         totalPendapatan = totalPendapatan + totalBiaya;
 
+        // ----- Pilihan mengulang atau mengakhiri -----
         valid = false;
         while (!valid) {
             cout << "\nProses kelompok lain? (y/n): ";
-            cin >> ulang;
-            if (ulang == 'y' || ulang == 'Y' || ulang == 'n' || ulang == 'N')
+            if (cin >> ulang) {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                if (ulang == 'y' || ulang == 'Y' || ulang == 'n' || ulang == 'N') valid = true;
+                else cout << "  [!] Masukkan 'y' atau 'n'.\n";
+            } else {
+                // input terputus (EOF): akhiri proses dengan wajar
+                ulang = 'n';
                 valid = true;
-            else
-                cout << "  [!] Masukkan 'y' atau 'n'.\n";
+            }
         }
     } while (ulang == 'y' || ulang == 'Y');
 
+    // ================= MODUL B : TAMPILKAN REKAPITULASI =================
+    // ===== Tampilkan rekapitulasi laboratorium =====
+    cout << fixed << setprecision(2);
     cout << "\n==================================================\n";
     cout << "         REKAPITULASI LABORATORIUM\n";
     cout << "==================================================\n";
     cout << "Jumlah Pengguna Internal  : " << jumlahInternal    << "\n";
     cout << "Jumlah Pengguna Eksternal : " << jumlahEksternal   << "\n";
-    cout << "Total Jam Penggunaan      : " << totalJam         << " jam\n";
+    cout << "Total Jam Penggunaan      : " << totalJam          << " jam\n";
     cout << "Jumlah Penggunaan Weekend : " << jumlahWeekend     << "\n";
     cout << "Jumlah Kerusakan Ringan   : " << jumlahRusakRingan << "\n";
     cout << "Jumlah Kerusakan Berat    : " << jumlahRusakBerat  << "\n";
     cout << "--------------------------------------------------\n";
-    cout << fixed << setprecision(2);
     cout << "Total Diskon              : Rp " << totalDiskon     << "\n";
     cout << "Total Denda               : Rp " << totalDenda      << "\n";
     cout << "TOTAL PENDAPATAN          : Rp " << totalPendapatan << "\n";
     cout << "==================================================\n";
-    cout << "Program selesai. Terima kasih!\n";
 
+    cout << "Program selesai. Terima kasih!\n";
     return 0;
 }
