@@ -1,419 +1,434 @@
 /**
- * Database Studi Kasus Algoritma dan Pemrograman C++
- * Menyediakan data studi kasus terstruktur dengan kode C++ dan penjelasannya.
+ * Data studi kasus UTS Alpro.
+ * Studi kasus 1-10 hanya judul; studi kasus 08 (kelompok ini) memiliki detail lengkap.
+ * Ganti teks ISI_... dengan identitas kelompok.
  */
-
-const DEFAULT_CASE_STUDIES = [
-    {
-        id: "kasus-1",
-        title: "Sistem Kasir & Diskon Bertingkat",
-        category: "Percabangan & Array",
-        level: "Mudah",
-        date: "2026-10-01",
-        author: "Tim Alpro",
-        description: "Menghitung total belanja dengan diskon member bertingkat, voucher potongan harga, dan kalkulasi PPN 11%.",
-        problem: "Sebuah minimarket membutuhkan program kasir otomatis untuk menghitung total tagihan belanja pelanggan. Toko memberlakukan aturan diskon:\n- Belanja >= Rp 500.000 diskon 15%\n- Belanja >= Rp 250.000 diskon 10%\n- Belanja >= Rp 100.000 diskon 5%\nJika pelanggan memiliki kartu member, mereka mendapatkan tambahan diskon 5% dari total setelah diskon belanja. Selain itu, dikenakan PPN sebesar 11%.",
-        algorithm: [
-            "1. Inisialisasi variabel total belanja, status member, dan diskon.",
-            "2. Input jumlah jenis barang yang dibeli dan simpan harga per item dalam array.",
-            "3. Hitung subtotal belanja dengan menjumlahkan semua harga item.",
-            "4. Periksa kondisi diskon belanja menggunakan struktur if-else if.",
-            "5. Cek apakah pembeli adalah member, jika ya hitung diskon tambahan.",
-            "6. Hitung PPN 11% dari total setelah diskon.",
-            "7. Tampilkan rincian struk pembelian dan uang kembalian."
-        ],
-        code: `#include <iostream>
-#include <iomanip>
-#include <vector>
-using namespace std;
-
-int main() {
-    int n;
-    cout << "=== SISTEM KASIR MINIMARKET ===" << endl;
-    cout << "Masukkan jumlah barang: ";
-    cin >> n;
-
-    vector<double> harga(n);
-    double subtotal = 0;
-
-    for (int i = 0; i < n; i++) {
-        cout << "Harga barang ke-" << i + 1 << ": Rp ";
-        cin >> harga[i];
-        subtotal += harga[i];
-    }
-
-    char statusMember;
-    cout << "Apakah memiliki kartu member? (y/n): ";
-    cin >> statusMember;
-
-    double diskonBelanja = 0.0;
-    if (subtotal >= 500000) {
-        diskonBelanja = 0.15;
-    } else if (subtotal >= 250000) {
-        diskonBelanja = 0.10;
-    } else if (subtotal >= 100000) {
-        diskonBelanja = 0.05;
-    }
-
-    double nominalDiskon = subtotal * diskonBelanja;
-    double setelahDiskon1 = subtotal - nominalDiskon;
-
-    double diskonMember = (statusMember == 'y' || statusMember == 'Y') ? 0.05 : 0.0;
-    double nominalDiskonMember = setelahDiskon1 * diskonMember;
-    double setelahDiskon2 = setelahDiskon1 - nominalDiskonMember;
-
-    double ppn = setelahDiskon2 * 0.11;
-    double totalAkhir = setelahDiskon2 + ppn;
-
-    cout << fixed << setprecision(2);
-    cout << "\\n================ STRUK BELANJA ================" << endl;
-    cout << "Subtotal         : Rp " << subtotal << endl;
-    cout << "Diskon Belanja   : Rp " << nominalDiskon << " (" << (diskonBelanja * 100) << "%)" << endl;
-    cout << "Diskon Member    : Rp " << nominalDiskonMember << " (" << (diskonMember * 100) << "%)" << endl;
-    cout << "PPN (11%)        : Rp " << ppn << endl;
-    cout << "-----------------------------------------------" << endl;
-    cout << "TOTAL BAYAR      : Rp " << totalAkhir << endl;
-
-    double bayar;
-    cout << "Nominal Bayar    : Rp ";
-    cin >> bayar;
-
-    if (bayar >= totalAkhir) {
-        cout << "Kembalian        : Rp " << (bayar - totalAkhir) << endl;
-    } else {
-        cout << "Uang kurang      : Rp " << (totalAkhir - bayar) << endl;
-    }
-
-    return 0;
-}`,
-        explanation: "Program ini mendemonstrasikan konsep percabangan bertingkat (if-else), manipulasi array dinamis menggunakan vector, dan operasi aritmetika dasar. Fungsi manipulasi output seperti fixed dan setprecision digunakan untuk memformat tampilan angka pecahan (desimal uang).",
-        sampleInput: "Jumlah barang: 3\nHarga: 150000, 200000, 180000\nMember: y\nBayar: 550000",
-        sampleOutput: "Subtotal: Rp 530000.00\nDiskon Belanja: Rp 79500.00 (15%)\nDiskon Member: Rp 22525.00 (5%)\nPPN (11%): Rp 47077.25\nTOTAL BAYAR: Rp 475052.25\nKembalian: Rp 74947.75",
-        tags: ["Percabangan", "Array", "Perulangan", "Manipulasi I/O"]
-    },
-    {
-        id: "kasus-2",
-        title: "Manajemen & Pengurutan Nilai Mahasiswa (Bubble Sort)",
-        category: "Sorting & Struct",
-        level: "Menengah",
-        date: "2026-10-02",
-        author: "Tim Alpro",
-        description: "Mengelola data nilai mahasiswa menggunakan struct dan mengurutkannya dari peringkat tertinggi ke terendah.",
-        problem: "Dosen membutuhkan sistem untuk mendata nilai mahasiswa, menghitung nilai akhir berdasarkan bobot (Tugas 30%, UTS 30%, UAS 40%), menentukan predikat kelulusan (A, B, C, D, E), dan mengurutkan peringkat kelas dari nilai tertinggi ke terendah.",
-        algorithm: [
-            "1. Definisikan struct Mahasiswa berisi nama, NIM, nilai tugas, UTS, UAS, nilai akhir, dan grade.",
-            "2. Input data n mahasiswa ke dalam array of struct.",
-            "3. Hitung nilai akhir: (0.3 * tugas) + (0.3 * uts) + (0.4 * uas).",
-            "4. Tentukan grade huruf menggunakan kondisi percabangan.",
-            "5. Lakukan pengurutan (Sorting) secara descending dengan algoritma Bubble Sort berdasarkan nilai akhir.",
-            "6. Tampilkan daftar peringkat mahasiswa dalam bentuk tabel yang rapi."
-        ],
-        code: `#include <iostream>
-#include <string>
-#include <iomanip>
-using namespace std;
-
-struct Mahasiswa {
-    string nim;
-    string nama;
-    double tugas, uts, uas;
-    double nilaiAkhir;
-    char grade;
+const IDENTITAS = {
+  mataKuliah: "SSI1144 Algoritma dan Pengantar Pemrograman",
+  anggota: [
+    { nama: "Daniel Adi Nugroho", nim: "ISI_NIM_1", modul: "Modul A (ubah jika berbeda)" },
+    { nama: "ISI_NAMA_ANGGOTA_2", nim: "ISI_NIM_2", modul: "Modul B (ubah jika berbeda)" }
+  ],
+  repository: "https://github.com/ISI_USERNAME_GITHUB/uts_alpro"
 };
 
-void hitungNilai(Mahasiswa &m) {
-    m.nilaiAkhir = (0.30 * m.tugas) + (0.30 * m.uts) + (0.40 * m.uas);
-    if (m.nilaiAkhir >= 85) m.grade = 'A';
-    else if (m.nilaiAkhir >= 70) m.grade = 'B';
-    else if (m.nilaiAkhir >= 55) m.grade = 'C';
-    else if (m.nilaiAkhir >= 40) m.grade = 'D';
-    else m.grade = 'E';
-}
-
-void bubbleSort(Mahasiswa arr[], int n) {
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - i - 1; j++) {
-            if (arr[j].nilaiAkhir < arr[j + 1].nilaiAkhir) {
-                Mahasiswa temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-            }
-        }
-    }
-}
-
-int main() {
-    int n;
-    cout << "Masukkan jumlah mahasiswa: ";
-    cin >> n;
-
-    Mahasiswa mhs[50];
-
-    for (int i = 0; i < n; i++) {
-        cout << "\\nData Mahasiswa ke-" << i + 1 << ":" << endl;
-        cout << "NIM    : "; cin >> mhs[i].nim;
-        cin.ignore();
-        cout << "Nama   : "; getline(cin, mhs[i].nama);
-        cout << "Tugas  : "; cin >> mhs[i].tugas;
-        cout << "UTS    : "; cin >> mhs[i].uts;
-        cout << "UAS    : "; cin >> mhs[i].uas;
-        hitungNilai(mhs[i]);
-    }
-
-    bubbleSort(mhs, n);
-
-    cout << "\\n" << setfill('=') << setw(65) << "=" << endl;
-    cout << setfill(' ');
-    cout << setw(5) << "Rank" 
-         << setw(12) << "NIM" 
-         << setw(20) << "Nama" 
-         << setw(12) << "Nilai Akhir" 
-         << setw(8) << "Grade" << endl;
-    cout << setfill('-') << setw(65) << "-" << endl;
-    cout << setfill(' ');
-
-    for (int i = 0; i < n; i++) {
-        cout << setw(5) << i + 1
-             << setw(12) << mhs[i].nim
-             << setw(20) << mhs[i].nama
-             << setw(12) << fixed << setprecision(2) << mhs[i].nilaiAkhir
-             << setw(8) << mhs[i].grade << endl;
-    }
-    return 0;
-}`,
-        explanation: "Studi kasus ini menggabungkan tipe data terstruktur (struct), passing by reference (&) pada fungsi kalkulasi nilai, dan algoritma Bubble Sort descending untuk mengurutkan objek kompleks berdasarkan salah satu atributnya.",
-        sampleInput: "Jumlah: 2\nMhs 1: NIM=2301, Nama=Budi, Tugas=80, UTS=85, UAS=90\nMhs 2: NIM=2302, Nama=Siti, Tugas=90, UTS=95, UAS=92",
-        sampleOutput: "Rank 1: Siti (92.30 - Grade A)\nRank 2: Budi (85.50 - Grade A)",
-        tags: ["Struct", "Bubble Sort", "Fungsi", "Tabel Output"]
-    },
-    {
-        id: "kasus-3",
-        title: "Pencarian ID Produk: Linear vs Binary Search",
-        category: "Searching & Algoritma",
-        level: "Menengah",
-        date: "2026-10-03",
-        author: "Tim Alpro",
-        description: "Membandingkan efisiensi algoritma Linear Search dan Binary Search dalam menemukan data katalog gudang.",
-        problem: "Gudang e-commerce memiliki ratusan data ID produk yang telah terurut. Sistem membutuhkan fitur pencarian cepat sekaligus menampilkan berapa kali operasi perbandingan (komparasi) yang dilakukan oleh kedua algoritma untuk membuktikan perbedaan kompleksitas O(n) vs O(log n).",
-        algorithm: [
-            "1. Siapkan dataset ID produk yang sudah berurutan (sorted array).",
-            "2. Input ID produk yang ingin dicari (target).",
-            "3. Jalankan Linear Search: periksa elemen satu per satu dari indeks 0 hingga n-1, catat counter komparasi.",
-            "4. Jalankan Binary Search: tentukan indeks kiri (low) dan kanan (high), cari titik tengah (mid). Jika target < mid, geser high = mid - 1; jika target > mid, geser low = mid + 1. Catat counter komparasi.",
-            "5. Bandingkan jumlah langkah/perbandingan yang dibutuhkan kedua metode."
+const STUDI_KASUS = [
+  {
+    "no": 1,
+    "judul": "Sistem Pengelolaan Parkir Kampus"
+  },
+  {
+    "no": 2,
+    "judul": "Sistem Perhitungan Biaya Laundry"
+  },
+  {
+    "no": 3,
+    "judul": "Sistem Pengolahan Nilai Mata Kuliah"
+  },
+  {
+    "no": 4,
+    "judul": "Sistem Perhitungan Biaya Pengiriman Paket"
+  },
+  {
+    "no": 5,
+    "judul": "Sistem Perhitungan Tagihan Air Rumah Tangga"
+  },
+  {
+    "no": 6,
+    "judul": "Sistem Evaluasi Persediaan Barang"
+  },
+  {
+    "no": 7,
+    "judul": "Sistem Pendaftaran Seminar Nasional"
+  },
+  {
+    "no": 8,
+    "judul": "Sistem Biaya Penggunaan Laboratorium",
+    "utama": true,
+    "detail": {
+      "ringkasan": "Program C++ console yang menghitung biaya penggunaan ruangan dan peralatan laboratorium untuk beberapa kelompok pengguna: tarif bertingkat per jam, tambahan akhir pekan, diskon pengguna internal, denda kerusakan, lalu rekapitulasi pendapatan laboratorium.",
+      "rumusan": "Bagaimana merancang program yang menerima data beberapa kelompok pengguna, menghitung biaya sesuai aturan, menolak input tidak valid, serta menampilkan rincian biaya dan rekapitulasi laboratorium.",
+      "ketentuan": [
+        [
+          "Tarif jam",
+          "2 jam pertama Rp50.000 per jam; jam berikutnya Rp35.000 per jam"
         ],
-        code: `#include <iostream>
-#include <vector>
-using namespace std;
-
-int linearSearch(const vector<int>& arr, int target, int &steps) {
-    steps = 0;
-    for (int i = 0; i < arr.size(); i++) {
-        steps++;
-        if (arr[i] == target) return i;
-    }
-    return -1;
-}
-
-int binarySearch(const vector<int>& arr, int target, int &steps) {
-    steps = 0;
-    int left = 0;
-    int right = arr.size() - 1;
-
-    while (left <= right) {
-        steps++;
-        int mid = left + (right - left) / 2;
-
-        if (arr[mid] == target) return mid;
-        if (arr[mid] < target) left = mid + 1;
-        else right = mid - 1;
-    }
-    return -1;
-}
-
-int main() {
-    // Dataset ID produk terurut
-    vector<int> produk = {101, 105, 112, 120, 135, 142, 150, 168, 175, 189, 204, 215, 230, 245, 260, 280};
-    
-    cout << "=== DAFTAR ID PRODUK TERSEDIA ===" << endl;
-    for (int id : produk) cout << id << " ";
-    cout << "\\nTotal produk: " << produk.size() << endl;
-
-    int cari;
-    cout << "\\nMasukkan ID Produk yang dicari: ";
-    cin >> cari;
-
-    int stepsLinear = 0, stepsBinary = 0;
-    int idxLinear = linearSearch(produk, cari, stepsLinear);
-    int idxBinary = binarySearch(produk, cari, stepsBinary);
-
-    cout << "\\n--- HASIL ANALISIS PENCARIAN ---" << endl;
-    if (idxBinary != -1) {
-        cout << "Status             : DITEMUKAN pada indeks " << idxBinary << endl;
-        cout << "Langkah Linear (O(n))    : " << stepsLinear << " perbandingan" << endl;
-        cout << "Langkah Binary (O(log n)): " << stepsBinary << " perbandingan" << endl;
-        cout << "Efisiensi          : Binary Search " 
-             << (stepsLinear - stepsBinary) << " langkah lebih cepat!" << endl;
-    } else {
-        cout << "Status: ID Produk TIDAK DITEMUKAN!" << endl;
-    }
-
-    return 0;
-}`,
-        explanation: "Binary Search membagi ruang pencarian menjadi setengah di setiap langkah, menjadikannya sangat efisien untuk data terurut dengan kompleksitas O(log n) dibandingkan Linear Search yang berjalan secara O(n).",
-        sampleInput: "ID dicari: 245",
-        sampleOutput: "Ditemukan pada indeks 13\nLangkah Linear: 14 perbandingan\nLangkah Binary: 3 perbandingan\nEfisiensi: Binary Search 11 langkah lebih cepat!",
-        tags: ["Binary Search", "Linear Search", "Kompleksitas", "Array"]
-    },
-    {
-        id: "kasus-4",
-        title: "Permainan Tic-Tac-Toe Console (Matriks 2D)",
-        category: "Array & Matriks 2D",
-        level: "Lanjutan",
-        date: "2026-10-04",
-        author: "Tim Alpro",
-        description: "Implementasi logika permainan papan 3x3 dua pemain (X dan O) menggunakan array 2 dimensi.",
-        problem: "Membangun game klasik Tic-Tac-Toe berbasis terminal. Dua pemain bergiliran mengisi koordinat kotak (baris dan kolom). Program harus memvalidasi giliran, mencegah input pada kotak yang sudah terisi, dan memeriksa kondisi kemenangan (3 simbol sama horizontal, vertikal, atau diagonal) serta kondisi seri.",
-        algorithm: [
-            "1. Inisialisasi matriks karakter 3x3 berisi angka '1' sampai '9'.",
-            "2. Buat fungsi cetak papan permainan.",
-            "3. Lakukan loop permainan bergantian antara Pemain X dan Pemain O.",
-            "4. Input nomor kotak dan konversi menjadi indeks baris dan kolom.",
-            "5. Validasi: jika kotak kosong, tempatkan simbol pemain. Jika tidak, minta input ulang.",
-            "6. Cek kondisi menang: 3 baris sama, 3 kolom sama, atau 2 pola diagonal sama.",
-            "7. Cek kondisi seri jika 9 kotak sudah terisi tanpa ada pemenang."
+        [
+          "Akhir pekan",
+          "Biaya penggunaan dikenai tambahan 25%"
         ],
-        code: `#include <iostream>
-using namespace std;
-
-char papan[3][3] = { {'1','2','3'}, {'4','5','6'}, {'7','8','9'} };
-char pemainSekarang = 'X';
-
-void gambarPapan() {
-    cout << "\\n";
-    cout << " " << papan[0][0] << " | " << papan[0][1] << " | " << papan[0][2] << "\\n";
-    cout << "---|---|---\\n";
-    cout << " " << papan[1][0] << " | " << papan[1][1] << " | " << papan[1][2] << "\\n";
-    cout << "---|---|---\\n";
-    cout << " " << papan[2][0] << " | " << papan[2][1] << " | " << papan[2][2] << "\\n\\n";
-}
-
-bool cekMenang() {
-    // Cek Baris & Kolom
-    for (int i = 0; i < 3; i++) {
-        if (papan[i][0] == papan[i][1] && papan[i][1] == papan[i][2]) return true;
-        if (papan[0][i] == papan[1][i] && papan[1][i] == papan[2][i]) return true;
-    }
-    // Cek Diagonal
-    if (papan[0][0] == papan[1][1] && papan[1][1] == papan[2][2]) return true;
-    if (papan[0][2] == papan[1][1] && papan[1][1] == papan[2][0]) return true;
-    return false;
-}
-
-bool cekSeri() {
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
-            if (papan[i][j] != 'X' && papan[i][j] != 'O') return false;
-    return true;
-}
-
-int main() {
-    int pilihan;
-    bool gameBerjalan = true;
-
-    cout << "=== TIC-TAC-TOE C++ CONSOLE ===" << endl;
-
-    while (gameBerjalan) {
-        gambarPapan();
-        cout << "Pemain " << pemainSekarang << ", pilih nomor kotak (1-9): ";
-        cin >> pilihan;
-
-        int baris = (pilihan - 1) / 3;
-        int kolom = (pilihan - 1) % 3;
-
-        if (pilihan < 1 || pilihan > 9 || papan[baris][kolom] == 'X' || papan[baris][kolom] == 'O') {
-            cout << "Pilihan tidak valid! Coba lagi.\\n";
-            continue;
-        }
-
-        papan[baris][kolom] = pemainSekarang;
-
-        if (cekMenang()) {
-            gambarPapan();
-            cout << "SELAMAT! Pemain " << pemainSekarang << " MEMENANGKAN PERMAINAN! 🎉\\n";
-            gameBerjalan = false;
-        } else if (cekSeri()) {
-            gambarPapan();
-            cout << "PERMAINAN SERI! Tidak ada pemenang.\\n";
-            gameBerjalan = false;
-        } else {
-            pemainSekarang = (pemainSekarang == 'X') ? 'O' : 'X';
-        }
-    }
-    return 0;
-}`,
-        explanation: "Menggunakan array dua dimensi 3x3 untuk representasi grafis papan, matematika pembagian dan modulus untuk memetakan input angka 1-9 ke koordinat baris (pilihan-1)/3 dan kolom (pilihan-1)%3, serta fungsi modular pengecekan status game.",
-        sampleInput: "Pemain X: 5\nPemain O: 1\nPemain X: 3\nPemain O: 2\nPemain X: 7",
-        sampleOutput: "Papan terisi diagonal X (3, 5, 7)\nSELAMAT! Pemain X MEMENANGKAN PERMAINAN! 🎉",
-        tags: ["Array 2D", "Game Logic", "Perulangan While", "Fungsi Modular"]
-    },
-    {
-        id: "kasus-5",
-        title: "Perhitungan FPB & Simulasi Menara Hanoi",
-        category: "Fungsi & Rekursi",
-        level: "Lanjutan",
-        date: "2026-10-05",
-        author: "Tim Alpro",
-        description: "Penerapan konsep rekursi untuk mencari Faktor Persekutuan Terbesar (FPB Euclidean) dan menyelesaikan teka-teki Menara Hanoi.",
-        problem: "Fungsi rekursif adalah fungsi yang memanggil dirinya sendiri sampai mencapai base case. Dua masalah matematika klasik yang paling elegan diselesaikan dengan rekursi adalah Algoritma Euclidean untuk FPB dan langkah pemindahan cakram pada Menara Hanoi (Tower of Hanoi).",
-        algorithm: [
-            "1. FPB Rekursif (Euclid): jika b == 0 maka hasilnya a, selain itu fpb(b, a % b).",
-            "2. Menara Hanoi Rekursif: pindahkan n-1 cakram dari pasak Asal ke pasak Bantuan.",
-            "3. Pindahkan cakram ke-n dari pasak Asal langsung ke pasak Tujuan.",
-            "4. Pindahkan n-1 cakram dari pasak Bantuan ke pasak Tujuan menggunakan pasak Asal."
+        [
+          "Diskon",
+          "Pengguna internal mendapat diskon 15%; tidak berlaku pada denda"
         ],
-        code: `#include <iostream>
-using namespace std;
-
-// Rekursi FPB (Euclidean Algorithm)
-int fpb(int a, int b) {
-    if (b == 0) return a;
-    return fpb(b, a % b);
-}
-
-// Rekursi Menara Hanoi
-void menaraHanoi(int n, char asal, char tujuan, char bantuan, int &langkah) {
-    if (n == 1) {
-        langkah++;
-        cout << "Langkah " << langkah << ": Pindahkan cakram 1 dari " << asal << " ke " << tujuan << endl;
-        return;
+        [
+          "Denda",
+          "Kerusakan ringan Rp100.000; kerusakan berat Rp500.000"
+        ],
+        [
+          "Modul B",
+          "Jumlah internal dan eksternal, total jam, jumlah akhir pekan, jumlah kerusakan ringan dan berat, total diskon, total denda, total pendapatan"
+        ]
+      ],
+      "asumsi": [
+        "Urutan perhitungan: biaya dasar, tambahan akhir pekan, diskon internal (dari subtotal), lalu denda ditambahkan terakhir.",
+        "Durasi boleh desimal (mis. 1,5 jam) dan dihitung proporsional.",
+        "Durasi dibatasi lebih dari 0 dan paling banyak 24 jam per kelompok.",
+        "Satu kelompok hanya memiliki satu status kerusakan (tidak ada, ringan, atau berat)."
+      ],
+      "ipo": {
+        "input": [
+          "Nama kelompok",
+          "Jenis pengguna (1 internal, 2 eksternal)",
+          "Durasi (jam)",
+          "Hari (1 kerja, 2 akhir pekan)",
+          "Status kerusakan (0 tidak ada, 1 ringan, 2 berat)",
+          "Pilihan ulang (y/n)"
+        ],
+        "proses": [
+          "Validasi input (percabangan dan perulangan)",
+          "Hitung biaya dasar (tarif bertingkat)",
+          "Hitung tambahan akhir pekan",
+          "Hitung diskon internal",
+          "Tentukan denda",
+          "Hitung total biaya",
+          "Perbarui akumulator rekapitulasi",
+          "Ulangi untuk kelompok berikutnya"
+        ],
+        "output": [
+          "Pesan kesalahan jika input tidak valid",
+          "Rincian biaya tiap kelompok",
+          "Rekapitulasi laboratorium"
+        ]
+      },
+      "variabel": [
+        [
+          "TARIF_JAM_AWAL, TARIF_JAM_LANJUT, BATAS_JAM_AWAL",
+          "const double",
+          "50000, 35000, 2",
+          "Tarif per jam dan batas 2 jam pertama"
+        ],
+        [
+          "PERSEN_WEEKEND, PERSEN_DISKON",
+          "const double",
+          "0.25, 0.15",
+          "Tambahan akhir pekan dan diskon internal"
+        ],
+        [
+          "DENDA_RINGAN, DENDA_BERAT, BATAS_DURASI_MAKS",
+          "const double",
+          "100000, 500000, 24",
+          "Nominal denda dan batas durasi"
+        ],
+        [
+          "namaKelompok",
+          "string",
+          "(input)",
+          "Nama kelompok"
+        ],
+        [
+          "jenisPengguna, hari, statusKerusakan",
+          "int",
+          "(input)",
+          "Pilihan menu"
+        ],
+        [
+          "durasi",
+          "double",
+          "(input)",
+          "Lama penggunaan (jam)"
+        ],
+        [
+          "biayaDasar, tambahanWeekend, subtotalPenggunaan, diskon, biayaSetelahDiskon, denda, totalBiaya",
+          "double",
+          "0",
+          "Komponen perhitungan biaya"
+        ],
+        [
+          "ulang, valid",
+          "char, bool",
+          "-, false",
+          "Kontrol perulangan dan validasi"
+        ],
+        [
+          "jumlahInternal, jumlahEksternal, jumlahWeekend, jumlahRusakRingan, jumlahRusakBerat",
+          "int",
+          "0",
+          "Penghitung rekapitulasi"
+        ],
+        [
+          "totalJam, totalDiskon, totalDenda, totalPendapatan",
+          "double",
+          "0.0",
+          "Akumulator rekapitulasi"
+        ]
+      ],
+      "algoritma": [
+        "Mulai program, deklarasikan konstanta tarif, persentase, denda, dan batas durasi 24 jam.",
+        "Minta nama kelompok; ulangi sampai tidak kosong.",
+        "Minta jenis pengguna (1 = internal, 2 = eksternal); ulangi sampai berupa angka 1 atau 2.",
+        "Minta durasi (jam); ulangi sampai berupa angka lebih dari 0 dan paling banyak 24.",
+        "Minta hari penggunaan (1 = hari kerja, 2 = akhir pekan); ulangi sampai valid.",
+        "Minta status kerusakan (0 = tidak ada, 1 = ringan, 2 = berat); ulangi sampai valid.",
+        "Hitung biaya dasar: jika durasi ≤ 2 jam maka durasi × 50.000; selain itu 2 × 50.000 + (durasi − 2) × 35.000.",
+        "Jika hari = akhir pekan, tambahan = 25% × biaya dasar; selain itu 0. Hitung subtotal = biaya dasar + tambahan.",
+        "Jika pengguna internal, diskon = 15% × subtotal; selain itu 0. Hitung biaya setelah diskon.",
+        "Tentukan denda: ringan 100.000, berat 500.000, tidak ada 0 (denda tidak didiskon).",
+        "Hitung total biaya = biaya setelah diskon + denda, lalu tampilkan rincian biaya.",
+        "Tanyakan apakah memproses kelompok lain (y/n); jika y ulangi dari langkah 2, jika n selesai.",
+        "MODUL B: setelah rincian ditampilkan, perbarui rekapitulasi (jumlah internal/eksternal, total jam, jumlah akhir pekan, jumlah kerusakan ringan/berat, total diskon, total denda, total pendapatan).",
+        "Setelah perulangan selesai, tampilkan rekapitulasi laboratorium."
+      ],
+      "pseudocode": "ALGORITMA SistemBiayaLaboratorium (Modul A + Modul B)\n\nMULAI\n  Deklarasikan konstanta tarif, persentase, denda, dan batas durasi\n  Inisialisasi variabel rekapitulasi (Modul B) <- 0\n\n  ULANGI\n    ----- MODUL A -----\n    BACA dan validasi: namaKelompok, jenisPengguna, durasi, hari, statusKerusakan\n    Hitung biayaDasar          (JIKA durasi <= 2 ... SELAIN ITU ...)\n    Hitung tambahanWeekend     (JIKA hari = 2)\n    subtotalPenggunaan <- biayaDasar + tambahanWeekend\n    Hitung diskon              (JIKA jenisPengguna = 1; hanya dari subtotalPenggunaan)\n    Hitung denda               (JIKA statusKerusakan = 1 / 2; TIDAK didiskon)\n    totalBiaya <- subtotalPenggunaan - diskon + denda\n    TAMPILKAN rincian biaya\n\n    ----- MODUL B (pengumpulan data) -----\n    Tambah jumlahInternal ATAU jumlahEksternal\n    totalJam <- totalJam + durasi\n    JIKA hari = 2 MAKA jumlahWeekend <- jumlahWeekend + 1\n    Tambah jumlahRusakRingan ATAU jumlahRusakBerat\n    totalDiskon, totalDenda, totalPendapatan <- ditambah nilai kelompok ini\n\n    ULANGI BACA ulang SAMPAI ulang = y/Y/n/N\n  SAMPAI ulang = 'n' ATAU 'N'\n\n  ----- MODUL B (tampilan) -----\n  TAMPILKAN rekapitulasi laboratorium\nSELESAI\n",
+      "flowchart": "flowchart TD\n  S([\"Mulai\"]) --> I[\"Inisialisasi konstanta tarif<br/>dan variabel rekapitulasi = 0\"]\n  I --> IN[/\"MODUL A: Input nama kelompok, jenis pengguna,<br/>durasi, hari, status kerusakan\"/]\n  IN --> V{\"Semua input valid?\"}\n  V -- Tidak --> ERR[/\"Tampilkan pesan kesalahan\"/]\n  ERR --> IN\n  V -- Ya --> C1{\"durasi ≤ 2 jam?\"}\n  C1 -- Ya --> P1[\"biayaDasar = durasi × 50.000\"]\n  C1 -- Tidak --> P2[\"biayaDasar = 2 × 50.000 + (durasi − 2) × 35.000\"]\n  P1 --> C2{\"hari = akhir pekan?\"}\n  P2 --> C2\n  C2 -- Ya --> P3[\"tambahanWeekend = 25% × biayaDasar\"]\n  C2 -- Tidak --> P4[\"tambahanWeekend = 0\"]\n  P3 --> P5[\"subtotal = biayaDasar + tambahanWeekend\"]\n  P4 --> P5\n  P5 --> C3{\"pengguna internal?\"}\n  C3 -- Ya --> P6[\"diskon = 15% × subtotal\"]\n  C3 -- Tidak --> P7[\"diskon = 0\"]\n  P6 --> C4{\"status kerusakan?\"}\n  P7 --> C4\n  C4 -- \"1 ringan\" --> D1[\"denda = 100.000\"]\n  C4 -- \"2 berat\" --> D2[\"denda = 500.000\"]\n  C4 -- \"0 tidak ada\" --> D0[\"denda = 0\"]\n  D1 --> T[\"totalBiaya = subtotal − diskon + denda\"]\n  D2 --> T\n  D0 --> T\n  T --> OUT[/\"Tampilkan rincian biaya kelompok\"/]\n  OUT --> R[\"MODUL B: perbarui rekapitulasi<br/>(jumlah internal/eksternal, total jam, weekend,<br/>rusak ringan/berat, diskon, denda, pendapatan)\"]\n  R --> U{\"Proses kelompok lain? (y/n)\"}\n  U -- \"y\" --> IN\n  U -- \"n\" --> RB[/\"MODUL B: Tampilkan rekapitulasi laboratorium\"/]\n  RB --> E([\"Selesai\"])\n",
+      "kode": "// STUDI KASUS 08 - SISTEM BIAYA PENGGUNAAN LABORATORIUM\n// PROGRAM TERINTEGRASI = MODUL A (Proses Utama) + MODUL B (Rekapitulasi)\n// Memproses beberapa kelompok pengguna (perulangan), menampilkan rincian biaya\n// tiap kelompok, lalu menampilkan rekapitulasi laboratorium.\n\n#include <iostream>\n#include <string>\n#include <iomanip>\n#include <limits>\n\nusing namespace std;\n\nint main() {\n    // ===== Konstanta ketentuan studi kasus =====\n    const double TARIF_JAM_AWAL    = 50000.0;  // tarif per jam untuk 2 jam pertama\n    const double TARIF_JAM_LANJUT  = 35000.0;  // tarif per jam setelah 2 jam pertama\n    const double BATAS_JAM_AWAL    = 2.0;      // batas jam bertarif awal\n    const double PERSEN_WEEKEND    = 0.25;     // tambahan akhir pekan 25%\n    const double PERSEN_DISKON     = 0.15;     // diskon pengguna internal 15%\n    const double DENDA_RINGAN      = 100000.0; // denda kerusakan ringan\n    const double DENDA_BERAT       = 500000.0; // denda kerusakan berat\n    const double BATAS_DURASI_MAKS = 24.0;     // batas logis durasi (1 hari)\n\n    // ===== Variabel rekapitulasi (Modul B) =====\n    int    jumlahInternal    = 0;\n    int    jumlahEksternal   = 0;\n    double totalJam          = 0.0;\n    int    jumlahWeekend     = 0;\n    int    jumlahRusakRingan = 0;\n    int    jumlahRusakBerat  = 0;\n    double totalDiskon       = 0.0;\n    double totalDenda        = 0.0;\n    double totalPendapatan   = 0.0;\n\n    char ulang;\n\n    cout << \"==================================================\\n\";\n    cout << \"     SISTEM BIAYA PENGGUNAAN LABORATORIUM\\n\";\n    cout << \"==================================================\\n\";\n\n    do {\n        string namaKelompok;\n        int    jenisPengguna, hari, statusKerusakan;\n        double durasi;\n        bool   valid;\n\n        // ================= MODUL A : PROSES UTAMA =================\n        // ----- Input data kelompok (dengan validasi) -----\n        cout << \"\\n--- INPUT DATA KELOMPOK ---\\n\";\n        cout << \"Nama Kelompok: \";\n        getline(cin, namaKelompok);\n        while (namaKelompok.empty()) {\n            cout << \"  [!] Nama kelompok tidak boleh kosong. Ulangi: \";\n            getline(cin, namaKelompok);\n        }\n\n        valid = false;\n        while (!valid) {\n            cout << \"Jenis Pengguna (1=Internal, 2=Eksternal): \";\n            if (cin >> jenisPengguna) {\n                if (jenisPengguna == 1 || jenisPengguna == 2) valid = true;\n                else cout << \"  [!] Pilihan harus 1 atau 2.\\n\";\n            } else {\n                cout << \"  [!] Input harus berupa angka.\\n\";\n                cin.clear();\n                cin.ignore(numeric_limits<streamsize>::max(), '\\n');\n            }\n        }\n\n        valid = false;\n        while (!valid) {\n            cout << \"Durasi Penggunaan (jam, maksimal 24): \";\n            if (cin >> durasi) {\n                if (durasi > 0 && durasi <= BATAS_DURASI_MAKS) valid = true;\n                else cout << \"  [!] Durasi harus lebih dari 0 dan maksimal 24 jam.\\n\";\n            } else {\n                cout << \"  [!] Input harus berupa angka.\\n\";\n                cin.clear();\n                cin.ignore(numeric_limits<streamsize>::max(), '\\n');\n            }\n        }\n\n        valid = false;\n        while (!valid) {\n            cout << \"Hari Penggunaan (1=Hari Kerja, 2=Akhir Pekan): \";\n            if (cin >> hari) {\n                if (hari == 1 || hari == 2) valid = true;\n                else cout << \"  [!] Pilihan harus 1 atau 2.\\n\";\n            } else {\n                cout << \"  [!] Input harus berupa angka.\\n\";\n                cin.clear();\n                cin.ignore(numeric_limits<streamsize>::max(), '\\n');\n            }\n        }\n\n        valid = false;\n        while (!valid) {\n            cout << \"Status Kerusakan (0=Tidak Ada, 1=Ringan, 2=Berat): \";\n            if (cin >> statusKerusakan) {\n                if (statusKerusakan >= 0 && statusKerusakan <= 2) valid = true;\n                else cout << \"  [!] Pilihan harus 0, 1, atau 2.\\n\";\n            } else {\n                cout << \"  [!] Input harus berupa angka.\\n\";\n                cin.clear();\n                cin.ignore(numeric_limits<streamsize>::max(), '\\n');\n            }\n        }\n\n        // ----- Proses perhitungan biaya -----\n        // 1) Biaya dasar: 2 jam pertama Rp50.000/jam, jam berikutnya Rp35.000/jam\n        double biayaDasar;\n        if (durasi <= BATAS_JAM_AWAL) {\n            biayaDasar = durasi * TARIF_JAM_AWAL;\n        } else {\n            biayaDasar = (BATAS_JAM_AWAL * TARIF_JAM_AWAL)\n                       + ((durasi - BATAS_JAM_AWAL) * TARIF_JAM_LANJUT);\n        }\n\n        // 2) Tambahan 25% jika dipakai pada akhir pekan\n        double tambahanWeekend = 0;\n        if (hari == 2) {\n            tambahanWeekend = biayaDasar * PERSEN_WEEKEND;\n        }\n        double subtotalPenggunaan = biayaDasar + tambahanWeekend;\n\n        // 3) Diskon 15% hanya untuk pengguna internal, dihitung dari biaya penggunaan\n        double diskon = 0;\n        if (jenisPengguna == 1) {\n            diskon = subtotalPenggunaan * PERSEN_DISKON;\n        }\n        double biayaSetelahDiskon = subtotalPenggunaan - diskon;\n\n        // 4) Denda kerusakan (TIDAK terkena diskon)\n        double denda = 0;\n        if (statusKerusakan == 1) {\n            denda = DENDA_RINGAN;\n        } else if (statusKerusakan == 2) {\n            denda = DENDA_BERAT;\n        }\n\n        // 5) Total biaya = biaya setelah diskon + denda\n        double totalBiaya = biayaSetelahDiskon + denda;\n\n        // ----- Tampilkan rincian biaya -----\n        cout << fixed << setprecision(2);\n        cout << \"\\n==================================================\\n\";\n        cout << \"  RINCIAN BIAYA : \" << namaKelompok << \"\\n\";\n        cout << \"==================================================\\n\";\n        cout << \"Jenis Pengguna       : \"\n             << (jenisPengguna == 1 ? \"Internal\" : \"Eksternal\") << \"\\n\";\n        cout << \"Durasi               : \" << durasi << \" jam\\n\";\n        cout << \"Hari                 : \"\n             << (hari == 1 ? \"Hari Kerja\" : \"Akhir Pekan\") << \"\\n\";\n        cout << \"Status Kerusakan     : \";\n        if (statusKerusakan == 0)      cout << \"Tidak Ada\\n\";\n        else if (statusKerusakan == 1) cout << \"Ringan\\n\";\n        else                           cout << \"Berat\\n\";\n        cout << \"--------------------------------------------------\\n\";\n        cout << \"Biaya Dasar          : Rp \" << biayaDasar         << \"\\n\";\n        cout << \"Tambahan Weekend 25% : Rp \" << tambahanWeekend    << \"\\n\";\n        cout << \"Subtotal Penggunaan  : Rp \" << subtotalPenggunaan << \"\\n\";\n        cout << \"Diskon Internal 15%  : Rp \" << diskon             << \"\\n\";\n        cout << \"Biaya Setelah Diskon : Rp \" << biayaSetelahDiskon << \"\\n\";\n        cout << \"Denda Kerusakan      : Rp \" << denda              << \"\\n\";\n        cout << \"--------------------------------------------------\\n\";\n        cout << \"TOTAL BIAYA          : Rp \" << totalBiaya         << \"\\n\";\n        cout << \"==================================================\\n\";\n\n        // ================= MODUL B : PENGUMPULAN DATA REKAPITULASI =================\n        if (jenisPengguna == 1) jumlahInternal++;\n        else                    jumlahEksternal++;\n\n        totalJam = totalJam + durasi;\n\n        if (hari == 2) jumlahWeekend++;\n\n        if (statusKerusakan == 1)      jumlahRusakRingan++;\n        else if (statusKerusakan == 2) jumlahRusakBerat++;\n\n        totalDiskon     = totalDiskon     + diskon;\n        totalDenda      = totalDenda      + denda;\n        totalPendapatan = totalPendapatan + totalBiaya;\n\n        // ----- Pilihan mengulang atau mengakhiri -----\n        valid = false;\n        while (!valid) {\n            cout << \"\\nProses kelompok lain? (y/n): \";\n            if (cin >> ulang) {\n                cin.ignore(numeric_limits<streamsize>::max(), '\\n');\n                if (ulang == 'y' || ulang == 'Y' || ulang == 'n' || ulang == 'N') valid = true;\n                else cout << \"  [!] Masukkan 'y' atau 'n'.\\n\";\n            } else {\n                // input terputus (EOF): akhiri proses dengan wajar\n                ulang = 'n';\n                valid = true;\n            }\n        }\n    } while (ulang == 'y' || ulang == 'Y');\n\n    // ================= MODUL B : TAMPILKAN REKAPITULASI =================\n    // ===== Tampilkan rekapitulasi laboratorium =====\n    cout << fixed << setprecision(2);\n    cout << \"\\n==================================================\\n\";\n    cout << \"         REKAPITULASI LABORATORIUM\\n\";\n    cout << \"==================================================\\n\";\n    cout << \"Jumlah Pengguna Internal  : \" << jumlahInternal    << \"\\n\";\n    cout << \"Jumlah Pengguna Eksternal : \" << jumlahEksternal   << \"\\n\";\n    cout << \"Total Jam Penggunaan      : \" << totalJam          << \" jam\\n\";\n    cout << \"Jumlah Penggunaan Weekend : \" << jumlahWeekend     << \"\\n\";\n    cout << \"Jumlah Kerusakan Ringan   : \" << jumlahRusakRingan << \"\\n\";\n    cout << \"Jumlah Kerusakan Berat    : \" << jumlahRusakBerat  << \"\\n\";\n    cout << \"--------------------------------------------------\\n\";\n    cout << \"Total Diskon              : Rp \" << totalDiskon     << \"\\n\";\n    cout << \"Total Denda               : Rp \" << totalDenda      << \"\\n\";\n    cout << \"TOTAL PENDAPATAN          : Rp \" << totalPendapatan << \"\\n\";\n    cout << \"==================================================\\n\";\n\n    cout << \"Program selesai. Terima kasih!\\n\";\n    return 0;\n}\n",
+      "hasil": "==================================================\n     SISTEM BIAYA PENGGUNAAN LABORATORIUM\n==================================================\n\n--- INPUT DATA KELOMPOK ---\nNama Kelompok: Jenis Pengguna (1=Internal, 2=Eksternal): Durasi Penggunaan (jam, maksimal 24): Hari Penggunaan (1=Hari Kerja, 2=Akhir Pekan): Status Kerusakan (0=Tidak Ada, 1=Ringan, 2=Berat): \n==================================================\n  RINCIAN BIAYA : Alpha\n==================================================\nJenis Pengguna       : Internal\nDurasi               : 3.00 jam\nHari                 : Akhir Pekan\nStatus Kerusakan     : Ringan\n--------------------------------------------------\nBiaya Dasar          : Rp 135000.00\nTambahan Weekend 25% : Rp 33750.00\nSubtotal Penggunaan  : Rp 168750.00\nDiskon Internal 15%  : Rp 25312.50\nBiaya Setelah Diskon : Rp 143437.50\nDenda Kerusakan      : Rp 100000.00\n--------------------------------------------------\nTOTAL BIAYA          : Rp 243437.50\n==================================================\n\nProses kelompok lain? (y/n): \n--- INPUT DATA KELOMPOK ---\nNama Kelompok: Jenis Pengguna (1=Internal, 2=Eksternal): Durasi Penggunaan (jam, maksimal 24): Hari Penggunaan (1=Hari Kerja, 2=Akhir Pekan): Status Kerusakan (0=Tidak Ada, 1=Ringan, 2=Berat): \n==================================================\n  RINCIAN BIAYA : Beta\n==================================================\nJenis Pengguna       : Eksternal\nDurasi               : 1.50 jam\nHari                 : Hari Kerja\nStatus Kerusakan     : Berat\n--------------------------------------------------\nBiaya Dasar          : Rp 75000.00\nTambahan Weekend 25% : Rp 0.00\nSubtotal Penggunaan  : Rp 75000.00\nDiskon Internal 15%  : Rp 0.00\nBiaya Setelah Diskon : Rp 75000.00\nDenda Kerusakan      : Rp 500000.00\n--------------------------------------------------\nTOTAL BIAYA          : Rp 575000.00\n==================================================\n\nProses kelompok lain? (y/n): \n--- INPUT DATA KELOMPOK ---\nNama Kelompok: Jenis Pengguna (1=Internal, 2=Eksternal): Durasi Penggunaan (jam, maksimal 24): Hari Penggunaan (1=Hari Kerja, 2=Akhir Pekan): Status Kerusakan (0=Tidak Ada, 1=Ringan, 2=Berat): \n==================================================\n  RINCIAN BIAYA : Gamma\n==================================================\nJenis Pengguna       : Internal\nDurasi               : 2.00 jam\nHari                 : Hari Kerja\nStatus Kerusakan     : Tidak Ada\n--------------------------------------------------\nBiaya Dasar          : Rp 100000.00\nTambahan Weekend 25% : Rp 0.00\nSubtotal Penggunaan  : Rp 100000.00\nDiskon Internal 15%  : Rp 15000.00\nBiaya Setelah Diskon : Rp 85000.00\nDenda Kerusakan      : Rp 0.00\n--------------------------------------------------\nTOTAL BIAYA          : Rp 85000.00\n==================================================\n\nProses kelompok lain? (y/n): \n==================================================\n         REKAPITULASI LABORATORIUM\n==================================================\nJumlah Pengguna Internal  : 2\nJumlah Pengguna Eksternal : 1\nTotal Jam Penggunaan      : 6.50 jam\nJumlah Penggunaan Weekend : 1\nJumlah Kerusakan Ringan   : 1\nJumlah Kerusakan Berat    : 1\n--------------------------------------------------\nTotal Diskon              : Rp 40312.50\nTotal Denda               : Rp 600000.00\nTOTAL PENDAPATAN          : Rp 903437.50\n==================================================\nProgram selesai. Terima kasih!\n",
+      "pengujian": [
+        {
+          "no": 1,
+          "skenario": "Input normal",
+          "data": "Internal, 3 jam, hari kerja, tanpa kerusakan",
+          "harapan": "TOTAL BIAYA Rp 114750.00",
+          "aktual": "TOTAL BIAYA Rp 114750.00",
+          "ok": true
+        },
+        {
+          "no": 2,
+          "skenario": "Batas tarif awal",
+          "data": "Eksternal, tepat 2 jam, hari kerja, tanpa kerusakan",
+          "harapan": "TOTAL BIAYA Rp 100000.00",
+          "aktual": "TOTAL BIAYA Rp 100000.00",
+          "ok": true
+        },
+        {
+          "no": 3,
+          "skenario": "Batas bawah durasi",
+          "data": "Eksternal, 0.5 jam, hari kerja, tanpa kerusakan",
+          "harapan": "TOTAL BIAYA Rp 25000.00",
+          "aktual": "TOTAL BIAYA Rp 25000.00",
+          "ok": true
+        },
+        {
+          "no": 4,
+          "skenario": "Batas atas durasi",
+          "data": "Eksternal, 24 jam, akhir pekan, rusak berat",
+          "harapan": "TOTAL BIAYA Rp 1587500.00",
+          "aktual": "TOTAL BIAYA Rp 1587500.00",
+          "ok": true
+        },
+        {
+          "no": 5,
+          "skenario": "Kombinasi lengkap",
+          "data": "Internal, 3 jam, akhir pekan, rusak ringan",
+          "harapan": "TOTAL BIAYA Rp 243437.50",
+          "aktual": "TOTAL BIAYA Rp 243437.50",
+          "ok": true
+        },
+        {
+          "no": 6,
+          "skenario": "Akhir pekan tanpa diskon",
+          "data": "Eksternal, 4 jam, akhir pekan, tanpa kerusakan",
+          "harapan": "TOTAL BIAYA Rp 212500.00",
+          "aktual": "TOTAL BIAYA Rp 212500.00",
+          "ok": true
+        },
+        {
+          "no": 7,
+          "skenario": "Durasi nol",
+          "data": "Durasi 0 ditolak, lalu 1 jam (eksternal, kerja, normal)",
+          "harapan": "TOTAL BIAYA Rp 50000.00; input salah ditolak",
+          "aktual": "TOTAL BIAYA Rp 50000.00; input salah ditolak",
+          "ok": true
+        },
+        {
+          "no": 8,
+          "skenario": "Durasi negatif",
+          "data": "Durasi -3 ditolak, lalu 2 jam (eksternal, kerja, normal)",
+          "harapan": "TOTAL BIAYA Rp 100000.00; input salah ditolak",
+          "aktual": "TOTAL BIAYA Rp 100000.00; input salah ditolak",
+          "ok": true
+        },
+        {
+          "no": 9,
+          "skenario": "Durasi melebihi batas",
+          "data": "Durasi 25 ditolak, lalu 24 jam (eksternal, kerja, normal)",
+          "harapan": "TOTAL BIAYA Rp 870000.00; input salah ditolak",
+          "aktual": "TOTAL BIAYA Rp 870000.00; input salah ditolak",
+          "ok": true
+        },
+        {
+          "no": 10,
+          "skenario": "Jenis pengguna tidak valid",
+          "data": "Input 'abc' dan 3 ditolak, lalu 1 (internal, 1 jam, kerja)",
+          "harapan": "TOTAL BIAYA Rp 42500.00; input salah ditolak",
+          "aktual": "TOTAL BIAYA Rp 42500.00; input salah ditolak",
+          "ok": true
+        },
+        {
+          "no": 11,
+          "skenario": "Status kerusakan tidak valid",
+          "data": "Status 5 ditolak, lalu 0 (eksternal, 1 jam, kerja)",
+          "harapan": "TOTAL BIAYA Rp 50000.00; input salah ditolak",
+          "aktual": "TOTAL BIAYA Rp 50000.00; input salah ditolak",
+          "ok": true
+        },
+        {
+          "no": 12,
+          "skenario": "Konfirmasi ulang tidak valid",
+          "data": "Jawaban 'x' ditolak, lalu 'n' (eksternal, 1 jam, kerja)",
+          "harapan": "TOTAL BIAYA Rp 50000.00; input salah ditolak",
+          "aktual": "TOTAL BIAYA Rp 50000.00; input salah ditolak",
+          "ok": true
+        }
+      ],
+      "traceCabInfo": "Input: Alpha, internal (1), durasi 3 jam, akhir pekan (2), kerusakan ringan (1).",
+      "traceCab": [
+        [
+          "1",
+          "durasi <= 2 ?",
+          "3 Salah",
+          "-"
+        ],
+        [
+          "2",
+          "biayaDasar = 2×50000 + (3-2)×35000",
+          "—",
+          "135000.00"
+        ],
+        [
+          "3",
+          "hari == 2 ?",
+          "2 == 2 → Benar",
+          "-"
+        ],
+        [
+          "4",
+          "tambahanWeekend = biayaDasar × 0,25",
+          "—",
+          "33750.00"
+        ],
+        [
+          "5",
+          "subtotalPenggunaan = biayaDasar + tambahanWeekend",
+          "—",
+          "168750.00"
+        ],
+        [
+          "6",
+          "jenisPengguna == 1 ?",
+          "1 == 1 → Benar",
+          "-"
+        ],
+        [
+          "7",
+          "diskon = subtotalPenggunaan × 0,15",
+          "—",
+          "25312.50"
+        ],
+        [
+          "8",
+          "biayaSetelahDiskon = subtotalPenggunaan - diskon",
+          "—",
+          "143437.50"
+        ],
+        [
+          "9",
+          "statusKerusakan == 1 ?",
+          "1 == 1 → Benar (denda ringan)",
+          "100000.00"
+        ],
+        [
+          "10",
+          "totalBiaya = biayaSetelahDiskon + denda",
+          "—",
+          "243437.50"
+        ]
+      ],
+      "traceLoopInfo": "Tiga putaran: Alpha (1; 3; 2; 1), Beta (2; 1,5; 1; 2), Gamma (1; 2; 1; 0). Nilai setelah setiap putaran selesai.",
+      "traceLoop": [
+        [
+          "Awal",
+          "-",
+          "0",
+          "0",
+          "0.00",
+          "0",
+          "0",
+          "0",
+          "0.00",
+          "0.00",
+          "0.00"
+        ],
+        [
+          "1",
+          "y",
+          "1",
+          "0",
+          "3.00",
+          "1",
+          "1",
+          "0",
+          "25312.50",
+          "100000.00",
+          "243437.50"
+        ],
+        [
+          "2",
+          "y",
+          "1",
+          "1",
+          "4.50",
+          "1",
+          "1",
+          "1",
+          "25312.50",
+          "600000.00",
+          "818437.50"
+        ],
+        [
+          "3",
+          "n",
+          "2",
+          "1",
+          "6.50",
+          "1",
+          "1",
+          "1",
+          "40312.50",
+          "600000.00",
+          "903437.50"
+        ]
+      ],
+      "kesalahan": [
+        [
+          "Input huruf pada angka membuat cin gagal dan program berulang tanpa henti",
+          "Tambah cin.clear() dan cin.ignore() pada setiap validasi angka"
+        ],
+        [
+          "Nama kelompok kedua terlewat karena sisa Enter dari input sebelumnya",
+          "Setelah membaca y/n, buang sisa baris dengan cin.ignore()"
+        ],
+        [
+          "Denda sempat ikut terhitung dalam diskon",
+          "Diskon hanya dihitung dari subtotalPenggunaan; denda ditambahkan setelah diskon"
+        ],
+        [
+          "Durasi nol, negatif, atau tidak masuk akal diterima",
+          "Validasi 0 < durasi <= 24 jam"
+        ],
+        [
+          "Pilihan ulang selain y/n membuat proses berhenti tidak wajar",
+          "Pilihan y/n divalidasi dengan perulangan sendiri"
+        ]
+      ]
     }
-    menaraHanoi(n - 1, asal, bantuan, tujuan, langkah);
-    langkah++;
-    cout << "Langkah " << langkah << ": Pindahkan cakram " << n << " dari " << asal << " ke " << tujuan << endl;
-    menaraHanoi(n - 1, bantuan, tujuan, asal, langkah);
-}
-
-int main() {
-    cout << "=== STUDI KASUS REKURSI C++ ===" << endl;
-    
-    // Uji Kasus 1: FPB
-    int x = 48, y = 18;
-    cout << "\\n1. Perhitungan FPB (" << x << ", " << y << "):" << endl;
-    cout << "   FPB = " << fpb(x, y) << endl;
-
-    // Uji Kasus 2: Menara Hanoi
-    int cakram = 3;
-    int totalLangkah = 0;
-    cout << "\\n2. Simulasi Menara Hanoi (" << cakram << " Cakram):" << endl;
-    menaraHanoi(cakram, 'A', 'C', 'B', totalLangkah);
-    cout << "   Total langkah yang dibutuhkan: " << totalLangkah << " langkah (2^n - 1 = " << (1 << cakram) - 1 << ")" << endl;
-
-    return 0;
-}`,
-        explanation: "Rekursi menyederhanakan masalah kompleks menjadi sub-masalah identik yang lebih kecil. Base case mencegah stack overflow. Untuk Menara Hanoi dengan n cakram, kompleksitas waktu adalah O(2^n).",
-        sampleInput: "Cakram: 3, Pasak: A -> C (bantuan B)",
-        sampleOutput: "Langkah 1: Cakram 1 (A -> C)\nLangkah 2: Cakram 2 (A -> B)\nLangkah 3: Cakram 1 (C -> B)\n...\nTotal: 7 langkah",
-        tags: ["Rekursi", "Matematika", "Divide and Conquer", "Algoritma Euclid"]
-    }
+  },
+  {
+    "no": 9,
+    "judul": "Sistem Pemeriksaan Anggaran Kegiatan Mahasiswa"
+  },
+  {
+    "no": 10,
+    "judul": "Sistem Monitoring Jejak Karbon Perjalanan Mahasiswa"
+  }
 ];
