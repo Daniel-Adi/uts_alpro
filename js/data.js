@@ -6,10 +6,10 @@
 const IDENTITAS = {
   mataKuliah: "SSI1144 Algoritma dan Pengantar Pemrograman",
   anggota: [
-    { nama: "Daniel Adi Nugroho", nim: "ISI_NIM_1", modul: "Modul A (ubah jika berbeda)" },
-    { nama: "ISI_NAMA_ANGGOTA_2", nim: "ISI_NIM_2", modul: "Modul B (ubah jika berbeda)" }
+    { nama: "Daniel Adi Nugroho", nim: "3226100", modul: "Modul A " },
+    { nama: "Mellow Laudya Farizty", nim: "322610017", modul: "Modul B " }
   ],
-  repository: "https://github.com/ISI_USERNAME_GITHUB/uts_alpro"
+  repository: "https://github.com/Daniel-Adi/uts_alpro"
 };
 
 const STUDI_KASUS = [
