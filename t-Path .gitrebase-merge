@@ -1,0 +1,7 @@
+[33m6bca96a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: rebase (finish): returning to refs/heads/main
+[33m6bca96a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{1}: rebase (continue): feat: tambah studi kasus Sistem Biaya Penggunaan Laboratorium (C++)
+[33mdd11fc2[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{2}: pull --rebase origin main (start): checkout dd11fc27e0cbe379854565781410f160435abdd3
+[33m8c45ce6[m HEAD@{3}: rebase (abort): returning to refs/heads/main
+[33mdd11fc2[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{4}: pull --rebase origin main (start): checkout dd11fc27e0cbe379854565781410f160435abdd3
+[33m8c45ce6[m HEAD@{5}: commit: feat: tambah studi kasus Sistem Biaya Penggunaan Laboratorium (C++)
+[33mbc25b64[m HEAD@{6}: clone: from https://github.com/Daniel-Adi/UTS-ALPRO.git
