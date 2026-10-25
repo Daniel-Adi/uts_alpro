@@ -47,7 +47,29 @@ const STUDI_KASUS = [
     "utama": true,
     "detail": {
       "ringkasan": "Program C++ console yang menghitung biaya penggunaan ruangan dan peralatan laboratorium untuk beberapa kelompok pengguna: tarif bertingkat per jam, tambahan akhir pekan, diskon pengguna internal, denda kerusakan, lalu rekapitulasi pendapatan laboratorium.",
-      "rumusan": "Bagaimana merancang program yang menerima data beberapa kelompok pengguna, menghitung biaya sesuai aturan, menolak input tidak valid, serta menampilkan rincian biaya dan rekapitulasi laboratorium.",
+      
+"latarBelakang": "Laboratorium kampus digunakan oleh berbagai kelompok, baik dari lingkungan internal kampus maupun pihak eksternal. Pengelola harus menghitung biaya setiap kelompok berdasarkan lama penggunaan, hari penggunaan, jenis pengguna, dan kondisi peralatan setelah dipakai. Perhitungan manual rawan salah karena melibatkan tarif bertingkat, tambahan akhir pekan, diskon, dan denda yang tidak boleh terkena diskon. Oleh karena itu dibuat program yang dapat menghitung biaya setiap kelompok secara konsisten dan menghasilkan rekapitulasi pendapatan secara teratur. Program juga dapat memproses data beberapa kelompok secara berulang sampai petugas memilih mengakhiri proses.",
+
+"rumusanMasalah": [
+  "Bagaimana cara menghitung biaya penggunaan berdasarkan tarif bertingkat (dua jam pertama dan jam berikutnya)?",
+  "Bagaimana cara menghitung tambahan akhir pekan dan diskon pengguna internal?",
+  "Bagaimana cara menghitung denda kerusakan tanpa terkena diskon?",
+  "Bagaimana cara memproses data beberapa kelompok secara berulang?",
+  "Bagaimana cara membuat rekapitulasi penggunaan dan pendapatan laboratorium?",
+  "Bagaimana cara menangani input yang tidak valid agar program tetap berjalan dengan baik?"
+],
+
+"tujuanProgram": [
+  "Menghitung biaya penggunaan laboratorium berdasarkan durasi, hari, dan jenis pengguna.",
+  "Menghitung denda berdasarkan status kerusakan peralatan.",
+  "Menampilkan rincian biaya yang harus dibayar setiap kelompok.",
+  "Memproses data kelompok secara berulang.",
+  "Menghasilkan rekapitulasi penggunaan dan pendapatan laboratorium."
+],
+
+"penggunaProgram": "Pengguna program adalah petugas atau pengelola laboratorium yang memasukkan data kelompok pengguna dan melihat hasil perhitungan biaya serta rekapitulasi."
+
+     
       "ketentuan": [
         [
           "Tarif jam",
@@ -63,12 +85,9 @@ const STUDI_KASUS = [
         ],
         [
           "Denda",
-          "Kerusakan ringan Rp100.000; kerusakan berat Rp500.000"
+          "Kerusakan ringan Rp100.000; kerusakan berat Rp500.000; tidak ada denda jika tidak ada kerusakan"
         ],
-        [
-          "Modul B",
-          "Jumlah internal dan eksternal, total jam, jumlah akhir pekan, jumlah kerusakan ringan dan berat, total diskon, total denda, total pendapatan"
-        ]
+      
       ],
       "asumsi": [
         "Urutan perhitungan: biaya dasar, tambahan akhir pekan, diskon internal (dari subtotal), lalu denda ditambahkan terakhir.",
