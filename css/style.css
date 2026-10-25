@@ -17,7 +17,7 @@ body { margin: 0; background: var(--bg); color: var(--text);
 a { color: var(--accent); }
 header.site { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
 header.site .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; padding: 10px 16px; }
-header.site .brand { font-weight: 700; margin-right: auto; }
+header.site .brand { font-weight: 700; margin-right: auto; text-decoration: none; color: var(--text); }
 header.site nav { display: flex; flex-wrap: wrap; gap: 2px 4px; }
 header.site nav a { text-decoration: none; color: var(--muted); padding: 6px 10px; border-radius: 8px; font-size: 14px; }
 header.site nav a:hover { background: var(--accent-soft); color: var(--accent); }
@@ -55,8 +55,27 @@ pre code { background: none; padding: 0; font-size: inherit; }
 ol, ul { padding-left: 22px; } li { margin: 3px 0; }
 footer.site { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; padding: 18px 0; text-align: center; }
 @media (max-width: 600px) { h1 { font-size: 1.5rem; } }
+[hidden] { display: none !important; }
+
+/* ---------- Tombol, tab, dan terminal program ---------- */
 .btn { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 8px; border: 1px solid var(--accent);
   background: var(--accent-soft); color: var(--accent); cursor: pointer; }
 .btn:hover { background: var(--accent); color: #fff; }
-[hidden] { display: none !important; }
-header.site .brand { text-decoration: none; color: var(--text); }
+.btn.utama { background: var(--accent); color: #fff; }
+.btn.utama:hover { filter: brightness(1.1); }
+a.btn { display: inline-block; text-decoration: none; }
+.aksi { display: flex; flex-wrap: wrap; gap: 8px; }
+.tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin: 6px 0 18px; }
+.tab { padding: 9px 16px; text-decoration: none; color: var(--muted); border-radius: 10px 10px 0 0; font-weight: 600; border: 1px solid transparent; border-bottom: none; }
+.tab:hover { color: var(--accent); }
+.tab.aktif { color: var(--accent); background: var(--card); border-color: var(--line); margin-bottom: -1px; }
+.status-tahap { font-size: 14px; font-weight: 600; color: var(--accent); margin: 8px 0; }
+.terminal { background: var(--code-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+.term-out { margin: 0; border-radius: 0; height: 430px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+.term-out .echo { color: #7ee787; font-weight: 600; }
+.term-form { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid #243049; background: #0a0f18; }
+.term-prompt { color: #7ee787; font-family: ui-monospace, Consolas, monospace; }
+.term-in { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: #e6edf7; font: 14px ui-monospace, Consolas, monospace; }
+.term-in:disabled { opacity: .5; }
+.term-hint { font-size: 14px; color: var(--muted); margin: 8px 0; min-height: 1.4em; }
+@media (max-width: 600px) { .term-out { height: 340px; } }

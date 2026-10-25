@@ -1,6 +1,3 @@
-
-
-// ---------- Konstanta ketentuan (sama dengan studi_kasus.cpp) ----------
 const TARIF_JAM_AWAL = 50000.0;
 const TARIF_JAM_LANJUT = 35000.0;
 const BATAS_JAM_AWAL = 2.0;
