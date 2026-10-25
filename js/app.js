@@ -1,257 +1,268 @@
 /**
- * Logika halaman: menampilkan daftar studi kasus dan detail studi kasus 08.
- * Data berasal dari js/data.js (STUDI_KASUS dan IDENTITAS).
+ * Logika halaman: menampilkan daftar studi kasus dan detail studi kasus 08
+ * Murni menggunakan DOM standar tanpa fungsi pembantu el().
  */
-
-// ---------- Helper ----------
-function el(tag, attrs, children) {
-    const node = document.createElement(tag);
-    Object.entries(attrs || {}).forEach(([k, v]) => {
-        if (k === 'class') node.className = v;
-        else if (k === 'html') node.innerHTML = v;      // hanya untuk data milik sendiri
-        else node.setAttribute(k, v);
-    });
-    [].concat(children || []).forEach(c => node.append(c));
-    return node;
-}
-function judulBagian(teks) { return el('h2', {}, teks); }
-function tabel(kepala, baris, kelasKolomStatus) {
-    const t = el('table');
-    t.append(el('thead', {}, el('tr', {}, kepala.map(k => el('th', {}, k)))));
-    t.append(el('tbody', {}, baris.map(r => el('tr', {}, r.map(c => {
-        return (c instanceof Node) ? el('td', {}, c) : el('td', {}, String(c));
-    })))));
-    return el('div', { class: 'tablewrap' }, t);
-}
-function daftar(items, ordered) {
-    return el(ordered ? 'ol' : 'ul', {}, items.map(i => el('li', {}, i)));
-}
-function blokKode(teks, kelas) {
-    return el('pre', { class: kelas || '' }, el('code', {}, teks));
-}
 
 // ---------- Beranda ----------
 function renderBeranda() {
-    document.getElementById('subJudul').textContent =
-        'From Problem to Program · ' + IDENTITAS.mataKuliah;
-
+    document.getElementById('subJudul').textContent = 'From Problem to Program · ' + IDENTITAS.mataKuliah;
+    
+    // Render Kartu Identitas
     const kartu = document.getElementById('kartuIdentitas');
     const utama = STUDI_KASUS.find(k => k.utama);
-    kartu.append(el('h3', { style: 'margin-top:0' }, 'Studi Kasus ' + String(utama.no).padStart(2, '0') + ': ' + utama.judul));
-    kartu.append(el('p', {}, utama.detail.ringkasan));
-    kartu.append(tabel(['Anggota', 'NIM', 'Tanggung jawab utama'],
-        IDENTITAS.anggota.map(a => [a.nama, a.nim, a.modul])));
-    kartu.append(el('p', {}, ['Repository GitHub: ', el('a', { href: IDENTITAS.repository }, IDENTITAS.repository)]));
-    kartu.append(el('p', { class: 'aksi' }, [
-        el('a', { class: 'btn utama', href: '#kasus-' + utama.no }, '\u25B6 Coba Program'),
-        el('a', { class: 'btn', href: '#kasus-' + utama.no + '/dokumentasi' }, '\uD83D\uDCC4 Dokumentasi')
-    ]));
+    
+    kartu.innerHTML = `
+        <h3 style="margin-top:0">Studi Kasus ${String(utama.no).padStart(2, '0')}: ${utama.judul}</h3>
+        <p>${utama.detail.ringkasan}</p>
+        <div class="tablewrap">
+            <table>
+                <thead>
+                    <tr><th>Anggota</th><th>NIM</th><th>Tanggung jawab utama</th></tr>
+                </thead>
+                <tbody>
+                    ${IDENTITAS.anggota.map(a => `<tr><td>${a.nama}</td><td>${a.nim}</td><td>${a.modul}</td></tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+        <p>Repository GitHub: <a href="${IDENTITAS.repository}" target="_blank">${IDENTITAS.repository}</a></p>
+        <p class="aksi">
+            <a class="btn utama" href="#kasus-${utama.no}">▶ Coba Program</a>
+            <a class="btn" href="#kasus-${utama.no}/dokumentasi">📄 Dokumentasi</a>
+        </p>
+    `;
 
+    // Render Daftar Kasus
     const grid = document.getElementById('daftarKasus');
+    grid.innerHTML = '';
     STUDI_KASUS.forEach(k => {
-        const nomor = el('span', { class: 'no' }, String(k.no).padStart(2, '0'));
+        const nomor = String(k.no).padStart(2, '0');
         if (k.detail) {
-            const isi = el('span', {}, [el('b', {}, k.judul), el('small', {}, 'Studi kasus kelompok ini · klik untuk mencoba program →')]);
-            grid.append(el('a', { class: 'kasus utama', href: '#kasus-' + k.no }, [nomor, isi]));
+            const a = document.createElement('a');
+            a.className = 'kasus utama';
+            a.href = `#kasus-${k.no}`;
+            a.innerHTML = `<span class="no">${nomor}</span><span><b>${k.judul}</b><small>Studi kasus kelompok ini · klik untuk mencoba program →</small></span>`;
+            grid.appendChild(a);
         } else {
-            grid.append(el('div', { class: 'kasus' }, [nomor, el('span', {}, k.judul)]));
+            const div = document.createElement('div');
+            div.className = 'kasus';
+            div.innerHTML = `<span class="no">${nomor}</span><span>${k.judul}</span>`;
+            grid.appendChild(div);
         }
     });
 }
 
-// ---------- Program interaktif ----------
-const TAHAP = {
-    mulai:     ['Memulai program', ''],
-    nama:      ['Modul A \u00b7 Input \u00b7 nama kelompok', 'Teks bebas, tidak boleh kosong'],
-    jenis:     ['Modul A \u00b7 Input \u00b7 jenis pengguna', '1 = Internal, 2 = Eksternal'],
-    durasi:    ['Modul A \u00b7 Input \u00b7 durasi penggunaan', 'Angka lebih dari 0 sampai 24 (boleh desimal, mis. 1.5)'],
-    hari:      ['Modul A \u00b7 Input \u00b7 hari penggunaan', '1 = Hari Kerja, 2 = Akhir Pekan'],
-    kerusakan: ['Modul A \u00b7 Input \u00b7 status kerusakan', '0 = Tidak Ada, 1 = Ringan, 2 = Berat'],
-    hitung:    ['Modul A \u00b7 Proses perhitungan biaya', ''],
-    rincian:   ['Modul A \u00b7 Menampilkan rincian biaya', ''],
-    rekap:     ['Modul B \u00b7 Memperbarui rekapitulasi', ''],
-    ulang:     ['Pilihan mengulang atau mengakhiri', 'y = proses kelompok lain, n = selesai dan tampilkan rekapitulasi'],
-    selesai:   ['Modul B \u00b7 Rekapitulasi selesai', 'Program selesai']
-};
+// ---------- Program Interaktif Berbasis Form (Modul A & B) ----------
+function renderProgram(wadah) {
+    wadah.innerHTML = `
+        <p>Masukkan data kelompok pengguna laboratorium sesuai urutan flowchart. Program akan memproses rincian biaya tiap kelompok dan mengakumulasikannya ke rekapitulasi akhir laboratorium.</p>
+        
+        <form class="card form-lab" id="formKelompok">
+            <h3 style="margin-top:0">Modul A: Input Data Kelompok Pengguna</h3>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Nama Kelompok:</label>
+                <input type="text" id="inputNama" class="form-control" required placeholder="Contoh: Kelompok Alpha" style="width: 100%; padding: 8px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Jenis Pengguna:</label>
+                <select id="inputJenis" class="form-control" style="width: 100%; padding: 8px;">
+                    <option value="1">1 = Internal (Memperoleh diskon 15%)</option>
+                    <option value="2">2 = Eksternal</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Durasi Penggunaan (jam, maksimal 24):</label>
+                <input type="number" id="inputDurasi" class="form-control" min="0.1" max="24" step="0.1" value="2" style="width: 100%; padding: 8px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Hari Penggunaan:</label>
+                <select id="inputHari" class="form-control" style="width: 100%; padding: 8px;">
+                    <option value="1">1 = Hari Kerja</option>
+                    <option value="2">2 = Akhir Pekan (Dikenai tambahan 25%)</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Status Kerusakan:</label>
+                <select id="inputKerusakan" class="form-control" style="width: 100%; padding: 8px;">
+                    <option value="0">0 = Tidak Ada (Rp0)</option>
+                    <option value="1">1 = Ringan (Denda Rp100.000)</option>
+                    <option value="2">2 = Berat (Denda Rp500.000)</option>
+                </select>
+            </div>
 
-function renderProgram(wadah, k) {
-    wadah.append(el('p', {}, 'Jalankan program sesuai rancangan di dokumentasi: ketik jawaban pada kolom di bawah lalu tekan Enter, seperti di console. Program memproses beberapa kelompok, lalu menampilkan rekapitulasi laboratorium.'));
+            <div class="aksi" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="submit" class="btn utama">Proses & Hitung Biaya Kelompok</button>
+                <button type="button" class="btn" id="btnSelesai">Selesai & Tampilkan Rekapitulasi (Modul B)</button>
+            </div>
+        </form>
 
-    const status = el('div', { class: 'status-tahap' }, '');
-    const keluaran = el('pre', { class: 'term-out', 'aria-live': 'polite' });
-    const petunjuk = el('div', { class: 'term-hint' }, '');
-    const kolom = el('input', { type: 'text', class: 'term-in', autocomplete: 'off', spellcheck: 'false', 'aria-label': 'Input program' });
-    const kirim = el('button', { class: 'btn utama', type: 'submit' }, 'Kirim');
-    const form = el('form', { class: 'term-form' }, [el('span', { class: 'term-prompt' }, '>'), kolom, kirim]);
-    const ulangi = el('button', { class: 'btn', type: 'button' }, '\u21BB Jalankan ulang');
-    const lanjut = el('a', { class: 'btn utama', href: '#kasus-' + k.no + '/dokumentasi', hidden: '' }, 'Lanjut ke dokumentasi \u2192');
+        <div id="hasilRincian"></div>
+        <div id="hasilRekap" hidden></div>
+    `;
 
-    const terminal = el('div', { class: 'terminal' }, [keluaran, form]);
-    wadah.append(status, terminal, petunjuk, el('p', { class: 'aksi' }, [ulangi, lanjut]));
-    wadah.append(el('div', { class: 'note' }, 'Program ini berjalan di browser dan merupakan terjemahan baris-per-baris dari studi_kasus.cpp (urutan input, validasi, perhitungan, rincian, dan rekapitulasi sama). Untuk penilaian, program C++ tetap dikompilasi dan dijalankan secara lokal.'));
-
-    let sesi = null;
-    const gulir = () => { keluaran.scrollTop = keluaran.scrollHeight; };
-    const tampilTahap = kode => {
-        const [label, hint] = TAHAP[kode] || [kode, ''];
-        status.textContent = 'Tahap: ' + label;
-        petunjuk.textContent = hint ? 'Petunjuk: ' + hint : '';
+    let rekapData = {
+        jumlahInternal: 0, jumlahEksternal: 0, totalJam: 0, jumlahWeekend: 0,
+        jumlahRusakRingan: 0, jumlahRusakBerat: 0, totalDiskon: 0, totalDenda: 0, totalPendapatan: 0
     };
-    const mulai = () => {
-        keluaran.textContent = '';
-        lanjut.hidden = true;
-        kolom.disabled = false; kirim.disabled = false; kolom.value = '';
-        sesi = mulaiSesi(t => { keluaran.append(document.createTextNode(t)); gulir(); }, tampilTahap);
-        akhiriJikaSelesai();
-        kolom.focus({ preventScroll: true });
-    };
-    const akhiriJikaSelesai = () => {
-        if (sesi.selesai) { kolom.disabled = true; kirim.disabled = true; lanjut.hidden = false; }
-    };
-    form.addEventListener('submit', e => {
-        e.preventDefault();
-        if (!sesi || sesi.selesai) return;
-        const baris = kolom.value;
-        keluaran.append(el('span', { class: 'echo' }, baris + '\n'));   // gema ketikan, seperti di terminal
-        kolom.value = '';
-        sesi.kirim(baris);
-        akhiriJikaSelesai();
-        gulir();
+
+    document.getElementById('formKelompok').addEventListener('submit', evt => {
+        evt.preventDefault();
+        const nama = document.getElementById('inputNama').value.trim();
+        const jenis = parseInt(document.getElementById('inputJenis').value);
+        const durasi = parseFloat(document.getElementById('inputDurasi').value);
+        const hari = parseInt(document.getElementById('inputHari').value);
+        const kerusakan = parseInt(document.getElementById('inputKerusakan').value);
+
+        if (!nama) { alert('Nama kelompok tidak boleh kosong!'); return; }
+        if (durasi <= 0 || durasi > 24) { alert('Durasi harus lebih dari 0 dan maksimal 24 jam!'); return; }
+
+        // Kalkulasi Biaya
+        const TARIF_JAM_AWAL = 50000.0;
+        const TARIF_JAM_LANJUT = 35000.0;
+        let biayaDasar = durasi <= 2 ? durasi * TARIF_JAM_AWAL : (2 * TARIF_JAM_AWAL) + ((durasi - 2) * TARIF_JAM_LANJUT);
+        let tambahanWeekend = hari === 2 ? biayaDasar * 0.25 : 0;
+        let subtotalPenggunaan = biayaDasar + tambahanWeekend;
+        let diskon = jenis === 1 ? subtotalPenggunaan * 0.15 : 0;
+        let biayaSetelahDiskon = subtotalPenggunaan - diskon;
+        let denda = kerusakan === 1 ? 100000.0 : (kerusakan === 2 ? 500000.0 : 0);
+        let totalBiaya = biayaSetelahDiskon + denda;
+
+        // Akumulasi Modul B
+        if (jenis === 1) rekapData.jumlahInternal++; else rekapData.jumlahEksternal++;
+        rekapData.totalJam += durasi;
+        if (hari === 2) rekapData.jumlahWeekend++;
+        if (kerusakan === 1) rekapData.jumlahRusakRingan++;
+        if (kerusakan === 2) rekapData.jumlahRusakBerat++;
+        rekapData.totalDiskon += diskon;
+        rekapData.totalDenda += denda;
+        rekapData.totalPendapatan += totalBiaya;
+
+        // Tampilkan Rincian Kelompok
+        document.getElementById('hasilRincian').innerHTML = `
+            <div class="card" style="border-color: var(--accent); margin-top: 15px;">
+                <h3>Rincian Biaya Kelompok: ${nama}</h3>
+                <div class="tablewrap">
+                    <table>
+                        <tr><th>Komponen Rincian</th><th>Nilai / Keterangan</th></tr>
+                        <tr><td>Jenis Pengguna</td><td>${jenis === 1 ? 'Internal (Diskon 15%)' : 'Eksternal'}</td></tr>
+                        <tr><td>Durasi Penggunaan</td><td>${durasi.toFixed(2)} jam</td></tr>
+                        <tr><td>Hari Penggunaan</td><td>${hari === 1 ? 'Hari Kerja' : 'Akhir Pekan (Tambahan 25%)'}</td></tr>
+                        <tr><td>Status Kerusakan</td><td>${kerusakan === 0 ? 'Tidak Ada' : (kerusakan === 1 ? 'Ringan (Denda Rp100.000)' : 'Berat (Denda Rp500.000)')}</td></tr>
+                        <tr><td>Biaya Dasar</td><td>Rp ${biayaDasar.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
+                        <tr><td>Tambahan Weekend (25%)</td><td>Rp ${tambahanWeekend.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
+                        <tr><td>Subtotal Penggunaan</td><td>Rp ${subtotalPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
+                        <tr><td>Diskon Internal (15%)</td><td>Rp ${diskon.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
+                        <tr><td>Biaya Setelah Diskon</td><td>Rp ${biayaSetelahDiskon.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
+                        <tr><td>Denda Kerusakan</td><td>Rp ${denda.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
+                        <tr><td><b>TOTAL BIAYA KELOMPOK</b></td><td><b>Rp ${totalBiaya.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</b></td></tr>
+                    </table>
+                </div>
+                <p class="sub" style="margin-top: 10px; color: var(--ok); font-weight: 600;">✔ Data kelompok berhasil diproses dan dimasukkan ke rekapitulasi. Silakan isi form di atas untuk kelompok berikutnya atau klik tombol Selesai.</p>
+            </div>
+        `;
+
+        document.getElementById('inputNama').value = '';
+        document.getElementById('inputNama').focus();
     });
-    ulangi.addEventListener('click', mulai);
-    terminal.addEventListener('click', () => { if (!kolom.disabled) kolom.focus({ preventScroll: true }); });
-    mulai();
+
+    document.getElementById('btnSelesai').addEventListener('click', () => {
+        const divRekap = document.getElementById('hasilRekap');
+        divRekap.hidden = false;
+        divRekap.innerHTML = `
+            <div class="card" style="background: var(--accent-soft); margin-top: 20px;">
+                <h2>Modul B: Rekapitulasi Laboratorium</h2>
+                <div class="tablewrap">
+                    <table>
+                        <tr><th>Parameter Rekapitulasi</th><th>Hasil Akhir</th></tr>
+                        <tr><td>Jumlah Pengguna Internal</td><td>${rekapData.jumlahInternal}</td></tr>
+                        <tr><td>Jumlah Pengguna Eksternal</td><td>${rekapData.jumlahEksternal}</td></tr>
+                        <tr><td>Total Jam Penggunaan</td><td>${rekapData.totalJam.toFixed(2)} jam</td></tr>
+                        <tr><td>Jumlah Penggunaan Weekend</td><td>${rekapData.jumlahWeekend}</td></tr>
+                        <tr><td>Jumlah Kerusakan Ringan</td><td>${rekapData.jumlahRusakRingan}</td></tr>
+                        <tr><td>Jumlah Kerusakan Berat</td><td>${rekapData.jumlahRusakBerat}</td></tr>
+                        <tr><td>Total Diskon</td><td>Rp ${rekapData.totalDiskon.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
+                        <tr><td>Total Denda</td><td>Rp ${rekapData.totalDenda.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
+                        <tr><td><b>TOTAL PENDAPATAN</b></td><td><b>Rp ${rekapData.totalPendapatan.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</b></td></tr>
+                    </table>
+                </div>
+                <p class="aksi" style="margin-top: 15px;">
+                    <button class="btn" type="button" id="btnReset">🔄 Reset / Mulai Program Baru</button>
+                </p>
+            </div>
+        `;
+        document.getElementById('btnReset').addEventListener('click', () => location.reload());
+        divRekap.scrollIntoView({ behavior: 'smooth' });
+    });
 }
 
-// ---------- Detail studi kasus ----------
-function renderDetail(k, tab) {
+// ---------- Render Dokumentasi ----------
+function renderDokumentasi(k, wadah) {
     const d = k.detail;
-    const root = document.getElementById('detail');
-    root.replaceChildren();
-    const nomor = String(k.no).padStart(2, '0');
+    wadah.innerHTML = `
+        <h2>1. Analisis Masalah</h2>
+        <p><b>Rumusan masalah: </b>${d.rumusan}</p>
+        <h3>Ketentuan</h3>
+        <div class="tablewrap">
+            <table>
+                <tr><th>Aturan</th><th>Ketentuan</th></tr>
+                ${d.ketentuan.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`).join('')}
+            </table>
+        </div>
 
-    root.append(el('p', {}, el('a', { href: '#beranda' }, '\u2190 Kembali ke daftar')));
-    root.append(el('h1', {}, 'Studi Kasus ' + nomor + ': ' + k.judul));
-    root.append(el('p', { class: 'sub' }, 'Modul A (proses utama) + Modul B (rekapitulasi) dalam satu program: studi_kasus.cpp'));
+        <h2>2. Algoritma Deskriptif</h2>
+        <ol>${d.algoritma.map(item => `<li>${item}</li>`).join('')}</ol>
 
-    root.append(el('div', { class: 'tabs' }, [
-        el('a', { class: 'tab' + (tab === 'program' ? ' aktif' : ''), href: '#kasus-' + k.no }, '\u25B6 Coba Program'),
-        el('a', { class: 'tab' + (tab === 'dokumentasi' ? ' aktif' : ''), href: '#kasus-' + k.no + '/dokumentasi' }, '\uD83D\uDCC4 Dokumentasi')
-    ]));
-    const isi = el('div', { class: 'isi-tab' });
-    root.append(isi);
+        <h2>3. Pseudocode</h2>
+        <pre class="pseudo"><code>${d.pseudocode}</code></pre>
 
-    if (tab === 'program') { renderProgram(isi, k); return; }
+        <h2>4. Flowchart</h2>
+        <pre class="mermaid">${d.flowchart}</pre>
 
-    // 1. Analisis masalah
-    isi.append(el('div', { class: 'note' }, ['Rancangan di halaman ini sudah diimplementasikan menjadi program interaktif. ', el('a', { href: '#kasus-' + k.no }, 'Coba program \u2192')]));
-    isi.append(judulBagian('1. Analisis Masalah'));
-    isi.append(el('p', {}, [el('b', {}, 'Rumusan masalah: '), d.rumusan]));
-    isi.append(el('h3', {}, 'Ketentuan'));
-    isi.append(tabel(['Aturan', 'Ketentuan'], d.ketentuan));
-    isi.append(el('div', { class: 'note' }, [el('b', {}, 'Asumsi kelompok (tidak disebut eksplisit di soal):'), daftar(d.asumsi)]));
-
-    isi.append(el('h3', {}, 'Input - Process - Output'));
-    isi.append(tabel(['Input', 'Proses', 'Output'], [[
-        el('div', {}, daftar(d.ipo.input)), el('div', {}, daftar(d.ipo.proses)), el('div', {}, daftar(d.ipo.output))
-    ]]));
-
-    isi.append(el('h3', {}, 'Variabel dan tipe data'));
-    isi.append(tabel(['Variabel / konstanta', 'Tipe data', 'Nilai awal', 'Kegunaan'], d.variabel));
-
-    // 2. Algoritma, pseudocode, flowchart
-    isi.append(judulBagian('2. Algoritma Deskriptif'));
-    isi.append(daftar(d.algoritma, true));
-
-    isi.append(judulBagian('3. Pseudocode'));
-    isi.append(blokKode(d.pseudocode, 'pseudo'));
-
-    isi.append(judulBagian('4. Flowchart'));
-    const fc = el('pre', { class: 'mermaid' }, d.flowchart);
-    isi.append(fc);
-    isi.append(el('p', { class: 'sub', id: 'catatanFlow' }, ''));
-
-    // 3. Source code
-    isi.append(judulBagian('5. Source Code (Modul A + Modul B)'));
-    const tombol = el('button', { class: 'btn', type: 'button' }, 'Salin kode');
-    tombol.addEventListener('click', () => {
-        navigator.clipboard.writeText(d.kode).then(() => {
-            tombol.textContent = 'Tersalin!';
-            setTimeout(() => (tombol.textContent = 'Salin kode'), 1800);
-        }).catch(() => (tombol.textContent = 'Gagal menyalin'));
-    });
-    isi.append(el('p', {}, [el('a', { href: 'studi_kasus.cpp' }, 'studi_kasus.cpp'), ' · kompilasi: ', el('code', {}, 'g++ studi_kasus.cpp -o studi_kasus'), ' ', tombol]));
-    isi.append(blokKode(d.kode));
-    isi.append(daftar([
-        'Validasi: setiap input dibaca dalam perulangan while; jika bukan angka, cin.clear() dan cin.ignore() membersihkan buffer sehingga program tidak berhenti.',
-        'Tarif bertingkat: if-else memisahkan durasi sampai 2 jam dan lebih dari 2 jam.',
-        'Urutan hitung: biaya dasar, tambahan akhir pekan, diskon (dari subtotal), baru denda ditambahkan sehingga denda tidak didiskon.',
-        'Modul B: variabel akumulator diperbarui di setiap putaran do-while dan ditampilkan setelah perulangan selesai.'
-    ]));
-
-    // 4. Hasil eksekusi
-    isi.append(judulBagian('6. Hasil Eksekusi'));
-    isi.append(el('p', {}, 'Contoh tiga kelompok: Alpha (internal, 3 jam, akhir pekan, rusak ringan), Beta (eksternal, 1,5 jam, hari kerja, rusak berat), Gamma (internal, 2 jam, hari kerja, tanpa kerusakan).'));
-    isi.append(blokKode(d.hasil));
-    isi.append(el('div', { class: 'todo' }, 'Tempel tangkapan layar hasil eksekusi di sini (simpan di folder img/ lalu tambahkan tag <img>).'));
-
-    // 5. Pengujian
-    isi.append(judulBagian('7. Tabel Pengujian'));
-    isi.append(tabel(['No.', 'Skenario & data masukan', 'Hasil yang diharapkan', 'Hasil aktual', 'Status'],
-        d.pengujian.map(p => [
-            String(p.no),
-            el('span', {}, [el('b', {}, p.skenario), el('br'), el('small', {}, p.data)]),
-            p.harapan, p.aktual,
-            el('span', { class: p.ok ? 'ok' : 'bad' }, p.ok ? 'Berhasil' : 'Gagal')
-        ])));
-
-    // 6. Trace table
-    isi.append(judulBagian('8. Trace Table'));
-    isi.append(el('h3', {}, 'Trace table percabangan'));
-    isi.append(el('p', {}, d.traceCabInfo));
-    isi.append(tabel(['Langkah', 'Pernyataan', 'Kondisi / hasil kondisi', 'Nilai variabel'], d.traceCab));
-    isi.append(el('h3', {}, 'Trace table perulangan'));
-    isi.append(el('p', {}, d.traceLoopInfo));
-    isi.append(tabel(['Putaran', 'ulang', 'jumlah Internal', 'jumlah Eksternal', 'total Jam', 'jumlah Weekend', 'rusak Ringan', 'rusak Berat', 'total Diskon', 'total Denda', 'total Pendapatan'], d.traceLoop));
-
-    // 7. Kesalahan
-    isi.append(judulBagian('9. Daftar Kesalahan dan Perbaikan'));
-    isi.append(tabel(['Kesalahan yang ditemukan', 'Perbaikan'], d.kesalahan));
-    isi.append(el('p', { class: 'sub' }, 'Sesuaikan daftar ini dengan kesalahan yang benar-benar dialami kelompok Anda.'));
-
-    gambarFlowchart(fc);
+        <h2>5. Source Code C++</h2>
+        <pre><code>${d.kode}</code></pre>
+    `;
+    if (window.mermaid) {
+        window.mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+        window.mermaid.run({ nodes: wadah.querySelectorAll('.mermaid') });
+    }
 }
 
-// Flowchart memakai Mermaid dari CDN; jika gagal dimuat, teks flowchart tetap tampil.
-function gambarFlowchart(node) {
-    const catatan = document.getElementById('catatanFlow');
-    const jalankan = () => {
-        try {
-            window.mermaid.initialize({ startOnLoad: false, theme: 'neutral', flowchart: { htmlLabels: true, curve: 'basis' } });
-            window.mermaid.run({ nodes: [node] });
-        } catch (e) { catatan.textContent = 'Flowchart gagal digambar; teks sumber ditampilkan.'; }
-    };
-    if (window.mermaid) { jalankan(); return; }
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js';
-    s.onload = jalankan;
-    s.onerror = () => { catatan.textContent = 'Flowchart tidak dapat dimuat (periksa koneksi internet); teks sumber ditampilkan.'; };
-    document.head.append(s);
-}
-
-// ---------- Navigasi berdasarkan hash ----------
+// ---------- Navigasi berdasarkan Hash ----------
 function tampilkan() {
     const m = location.hash.match(/^#kasus-(\d+)(\/dokumentasi)?$/);
     const beranda = document.getElementById('beranda');
     const detail = document.getElementById('detail');
     const k = m && STUDI_KASUS.find(x => x.no === Number(m[1]) && x.detail);
+
     if (k) {
-        beranda.hidden = true; detail.hidden = false;
-        renderDetail(k, m[2] ? 'dokumentasi' : 'program');
+        beranda.hidden = true;
+        detail.hidden = false;
+        document.getElementById('judulKasus').textContent = `Studi Kasus ${String(k.no).padStart(2, '0')}: ${k.judul}`;
+        
+        const isDokumentasi = !!m[2];
+        document.getElementById('tabProgram').className = 'tab' + (!isDokumentasi ? ' aktif' : '');
+        document.getElementById('tabDokumentasi').className = 'tab' + (isDokumentasi ? ' aktif' : '');
+        document.getElementById('tabProgram').href = `#kasus-${k.no}`;
+        document.getElementById('tabDokumentasi').href = `#kasus-${k.no}/dokumentasi`;
+
+        const konten = document.getElementById('kontenTab');
+        konten.innerHTML = '';
+        if (isDokumentasi) {
+            renderDokumentasi(k, konten);
+        } else {
+            renderProgram(konten);
+        }
         window.scrollTo(0, 0);
     } else {
-        detail.hidden = true; beranda.hidden = false;
-        if (location.hash === '#daftar') document.getElementById('daftar').scrollIntoView();
+        detail.hidden = true;
+        beranda.hidden = false;
+        if (location.hash === '#daftar') {
+            document.getElementById('daftar').scrollIntoView();
+        }
     }
 }
 
