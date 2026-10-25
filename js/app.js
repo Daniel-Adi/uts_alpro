@@ -1,238 +1,269 @@
 /**
- * Logika halaman: menampilkan beranda, daftar studi kasus, 
- * Form interaktif Modul A & B, serta Dokumentasi lengkap Studi Kasus 08.
+ * Logika halaman: beranda, program berbasis form (Modul A + B), dan dokumentasi.
+ * Perhitungan ada di js/program.js; file ini hanya mengurus tampilan.
  */
+
+// Mengamankan teks agar karakter seperti < dan > tidak dianggap tag HTML
+function esc(teks) {
+    return String(teks).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 // ---------- Beranda ----------
 function renderBeranda() {
     document.getElementById('subJudul').textContent = 'From Problem to Program · ' + IDENTITAS.mataKuliah;
 
-    const kartu = document.getElementById('kartuIdentitas');
     const utama = STUDI_KASUS.find(k => k.utama);
-    kartu.innerHTML = `
-        <h3 style="margin-top:0">Studi Kasus ${String(utama.no).padStart(2, '0')}: ${utama.judul}</h3>
-        <p>${utama.detail.ringkasan}</p>
+    document.getElementById('kartuIdentitas').innerHTML = `
+        <h3 style="margin-top:0">Studi Kasus ${String(utama.no).padStart(2, '0')}: ${esc(utama.judul)}</h3>
+        <p>${esc(utama.detail.ringkasan)}</p>
         <div class="tablewrap">
             <table>
                 <thead><tr><th>Anggota</th><th>NIM</th><th>Tanggung jawab utama</th></tr></thead>
                 <tbody>
-                    ${IDENTITAS.anggota.map(a => `<tr><td>${a.nama}</td><td>${a.nim}</td><td>${a.modul}</td></tr>`).join('')}
+                    ${IDENTITAS.anggota.map(a => `<tr><td>${esc(a.nama)}</td><td>${esc(a.nim)}</td><td>${esc(a.modul)}</td></tr>`).join('')}
                 </tbody>
             </table>
         </div>
-        <p>Repository GitHub: <a href="${IDENTITAS.repository}" target="_blank">${IDENTITAS.repository}</a></p>
+        <p>Repository GitHub: <a href="${IDENTITAS.repository}" target="_blank" rel="noopener">${IDENTITAS.repository}</a></p>
         <p class="aksi">
             <a class="btn utama" href="#kasus-${utama.no}">▶ Coba Program</a>
             <a class="btn" href="#kasus-${utama.no}/dokumentasi">📄 Dokumentasi</a>
-        </p>
-    `;
+        </p>`;
 
-    const grid = document.getElementById('daftarKasus');
-    grid.innerHTML = '';
-    STUDI_KASUS.forEach(k => {
-        const nomor = String(k.no).padStart(2, '0');
-        if (k.detail) {
-            grid.innerHTML += `<a class="kasus utama" href="#kasus-${k.no}"><span class="no">${nomor}</span><span><b>${k.judul}</b><small>Studi kasus kelompok ini · klik untuk mencoba program →</small></span></a>`;
-        } else {
-            grid.innerHTML += `<div class="kasus"><span class="no">${nomor}</span><span>${k.judul}</span></div>`;
-        }
-    });
+    document.getElementById('daftarKasus').innerHTML = STUDI_KASUS.map(k => {
+        const no = String(k.no).padStart(2, '0');
+        return k.detail
+            ? `<a class="kasus utama" href="#kasus-${k.no}"><span class="no">${no}</span><span><b>${esc(k.judul)}</b><small>Studi kasus kelompok ini · klik untuk mencoba program →</small></span></a>`
+            : `<div class="kasus"><span class="no">${no}</span><span>${esc(k.judul)}</span></div>`;
+    }).join('');
 }
 
-// ---------- Program Interaktif Berbasis Form (Modul A & B) ----------
+// ---------- Program interaktif (form) ----------
+function barisRincian(label, nilai, tebal) {
+    return `<tr><td>${tebal ? '<b>' + label + '</b>' : label}</td><td>${tebal ? '<b>' + nilai + '</b>' : nilai}</td></tr>`;
+}
+
 function renderProgram(wadah) {
     wadah.innerHTML = `
-        <p>Masukkan data kelompok pengguna laboratorium sesuai urutan flowchart. Program akan memproses rincian biaya tiap kelompok dan mengakumulasikannya ke rekapitulasi akhir laboratorium.</p>
-        
-        <form class="card form-lab" id="formKelompok">
-            <h3 style="margin-top:0">Modul A: Input Data Kelompok Pengguna</h3>
-            
-            <div class="form-group" style="margin-bottom: 12px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Nama Kelompok:</label>
-                <input type="text" id="inputNama" class="form-control" required placeholder="Contoh: Kelompok Alpha" style="width: 100%; padding: 8px;">
+        <p>Isi data satu kelompok, tekan <b>Proses</b>, lalu isi kelompok berikutnya. Jika semua kelompok sudah dimasukkan, tekan <b>Selesai</b> untuk melihat rekapitulasi.</p>
+        <form class="card form-lab" id="formKelompok" novalidate>
+            <h3 style="margin-top:0">Data kelompok pengguna</h3>
+            <div class="field">
+                <label for="inputNama">Nama kelompok</label>
+                <input type="text" id="inputNama" placeholder="Contoh: Kelompok Alpha" autocomplete="off">
+                <p class="galat" id="galatNama"></p>
             </div>
-            
-            <div class="form-group" style="margin-bottom: 12px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Jenis Pengguna:</label>
-                <select id="inputJenis" class="form-control" style="width: 100%; padding: 8px;">
-                    <option value="1">1 = Internal (Memperoleh diskon 15%)</option>
+            <div class="field">
+                <label for="inputJenis">Jenis pengguna</label>
+                <select id="inputJenis">
+                    <option value="">-- pilih --</option>
+                    <option value="1">1 = Internal (diskon 15%)</option>
                     <option value="2">2 = Eksternal</option>
                 </select>
+                <p class="galat" id="galatJenis"></p>
             </div>
-            
-            <div class="form-group" style="margin-bottom: 12px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Durasi Penggunaan (jam, maksimal 24):</label>
-                <input type="number" id="inputDurasi" class="form-control" min="0.1" max="24" step="0.1" value="2" style="width: 100%; padding: 8px;">
+            <div class="field">
+                <label for="inputDurasi">Durasi penggunaan (jam, maksimal 24)</label>
+                <input type="text" inputmode="decimal" id="inputDurasi" placeholder="Contoh: 2 atau 1.5" autocomplete="off">
+                <p class="galat" id="galatDurasi"></p>
             </div>
-            
-            <div class="form-group" style="margin-bottom: 12px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Hari Penggunaan:</label>
-                <select id="inputHari" class="form-control" style="width: 100%; padding: 8px;">
-                    <option value="1">1 = Hari Kerja</option>
-                    <option value="2">2 = Akhir Pekan (Dikenai tambahan 25%)</option>
+            <div class="field">
+                <label for="inputHari">Hari penggunaan</label>
+                <select id="inputHari">
+                    <option value="">-- pilih --</option>
+                    <option value="1">1 = Hari kerja</option>
+                    <option value="2">2 = Akhir pekan (tambahan 25%)</option>
                 </select>
+                <p class="galat" id="galatHari"></p>
             </div>
-            
-            <div class="form-group" style="margin-bottom: 16px;">
-                <label style="display: block; font-weight: 600; margin-bottom: 4px;">Status Kerusakan:</label>
-                <select id="inputKerusakan" class="form-control" style="width: 100%; padding: 8px;">
-                    <option value="0">0 = Tidak Ada (Rp0)</option>
-                    <option value="1">1 = Ringan (Denda Rp100.000)</option>
-                    <option value="2">2 = Berat (Denda Rp500.000)</option>
+            <div class="field">
+                <label for="inputKerusakan">Status kerusakan</label>
+                <select id="inputKerusakan">
+                    <option value="">-- pilih --</option>
+                    <option value="0">0 = Tidak ada</option>
+                    <option value="1">1 = Ringan (denda Rp100.000)</option>
+                    <option value="2">2 = Berat (denda Rp500.000)</option>
                 </select>
+                <p class="galat" id="galatKerusakan"></p>
             </div>
-
-            <div class="aksi" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button type="submit" class="btn utama">Proses & Hitung Biaya Kelompok</button>
-                <button type="button" class="btn" id="btnSelesai">Selesai & Tampilkan Rekapitulasi (Modul B)</button>
+            <div class="aksi">
+                <button type="submit" class="btn utama">Proses kelompok</button>
+                <button type="button" class="btn" id="btnSelesai">Selesai &amp; lihat rekapitulasi</button>
             </div>
+            <p class="galat" id="galatUmum"></p>
         </form>
-
         <div id="hasilRincian"></div>
-        <div id="hasilRekap" hidden></div>
-    `;
+        <div id="hasilRekap" hidden></div>`;
 
-    let rekapData = {
-        jumlahInternal: 0, jumlahEksternal: 0, totalJam: 0, jumlahWeekend: 0,
-        jumlahRusakRingan: 0, jumlahRusakBerat: 0, totalDiskon: 0, totalDenda: 0, totalPendapatan: 0
-    };
+    let rekap = buatRekap();
+    let jumlahKelompok = 0;
+    const ambil = id => document.getElementById(id);
+    const kolom = { nama: 'galatNama', jenis: 'galatJenis', durasi: 'galatDurasi', hari: 'galatHari', kerusakan: 'galatKerusakan' };
 
-    document.getElementById('formKelompok').addEventListener('submit', evt => {
+    function bersihkanGalat() {
+        Object.values(kolom).forEach(id => { ambil(id).textContent = ''; });
+        ambil('galatUmum').textContent = '';
+    }
+
+    ambil('formKelompok').addEventListener('submit', evt => {
         evt.preventDefault();
-        const nama = document.getElementById('inputNama').value.trim();
-        const jenis = parseInt(document.getElementById('inputJenis').value);
-        const durasi = parseFloat(document.getElementById('inputDurasi').value);
-        const hari = parseInt(document.getElementById('inputHari').value);
-        const kerusakan = parseInt(document.getElementById('inputKerusakan').value);
+        bersihkanGalat();
+        const cek = validasiInput({
+            nama: ambil('inputNama').value,
+            jenis: ambil('inputJenis').value,
+            durasi: ambil('inputDurasi').value,
+            hari: ambil('inputHari').value,
+            kerusakan: ambil('inputKerusakan').value
+        });
+        if (!cek.valid) {
+            for (const k in cek.galat) ambil(kolom[k]).textContent = cek.galat[k];
+            return;
+        }
 
-        if (!nama) { alert('Nama kelompok tidak boleh kosong!'); return; }
-        if (durasi <= 0 || durasi > 24) { alert('Durasi harus lebih dari 0 dan maksimal 24 jam!'); return; }
+        const d = cek.data;
+        const h = hitungBiaya(d);
+        perbaruiRekap(rekap, d, h);
+        jumlahKelompok++;
 
-        const TARIF_JAM_AWAL = 50000.0;
-        const TARIF_JAM_LANJUT = 35000.0;
-        let biayaDasar = durasi <= 2 ? durasi * TARIF_JAM_AWAL : (2 * TARIF_JAM_AWAL) + ((durasi - 2) * TARIF_JAM_LANJUT);
-        let tambahanWeekend = hari === 2 ? biayaDasar * 0.25 : 0;
-        let subtotalPenggunaan = biayaDasar + tambahanWeekend;
-        let diskon = jenis === 1 ? subtotalPenggunaan * 0.15 : 0;
-        let biayaSetelahDiskon = subtotalPenggunaan - diskon;
-        let denda = kerusakan === 1 ? 100000.0 : (kerusakan === 2 ? 500000.0 : 0);
-        let totalBiaya = biayaSetelahDiskon + denda;
+        const teksKerusakan = ['Tidak ada', 'Ringan', 'Berat'][d.kerusakan];
+        ambil('hasilRincian').innerHTML = `
+            <div class="card hasil">
+                <h3 style="margin-top:0">Rincian biaya: ${esc(d.nama)}</h3>
+                <div class="tablewrap"><table>
+                    <tr><th>Komponen</th><th>Nilai</th></tr>
+                    ${barisRincian('Jenis pengguna', d.jenis === 1 ? 'Internal' : 'Eksternal')}
+                    ${barisRincian('Durasi', fmt2(d.durasi) + ' jam')}
+                    ${barisRincian('Hari', d.hari === 1 ? 'Hari kerja' : 'Akhir pekan')}
+                    ${barisRincian('Kerusakan', teksKerusakan)}
+                    ${barisRincian('Biaya dasar', rupiah(h.biayaDasar))}
+                    ${barisRincian('Tambahan akhir pekan', rupiah(h.tambahanWeekend))}
+                    ${barisRincian('Subtotal', rupiah(h.subtotal))}
+                    ${barisRincian('Diskon internal', '- ' + rupiah(h.diskon))}
+                    ${barisRincian('Biaya setelah diskon', rupiah(h.setelahDiskon))}
+                    ${barisRincian('Denda kerusakan', rupiah(h.denda))}
+                    ${barisRincian('TOTAL BIAYA', rupiah(h.total), true)}
+                </table></div>
+                <p class="sukses">Kelompok ke-${jumlahKelompok} masuk ke rekapitulasi. Isi form lagi untuk kelompok berikutnya, atau tekan Selesai.</p>
+            </div>`;
 
-        if (jenis === 1) rekapData.jumlahInternal++; else rekapData.jumlahEksternal++;
-        rekapData.totalJam += durasi;
-        if (hari === 2) rekapData.jumlahWeekend++;
-        if (kerusakan === 1) rekapData.jumlahRusakRingan++;
-        if (kerusakan === 2) rekapData.jumlahRusakBerat++;
-        rekapData.totalDiskon += diskon;
-        rekapData.totalDenda += denda;
-        rekapData.totalPendapatan += totalBiaya;
-
-        document.getElementById('hasilRincian').innerHTML = `
-            <div class="card" style="border-color: var(--accent); margin-top: 15px;">
-                <h3>Rincian Biaya Kelompok: ${nama}</h3>
-                <div class="tablewrap">
-                    <table>
-                        <tr><th>Komponen Rincian</th><th>Nilai / Keterangan</th></tr>
-                        <tr><td>Jenis Pengguna</td><td>${jenis === 1 ? 'Internal (Diskon 15%)' : 'Eksternal'}</td></tr>
-                        <tr><td>Durasi Penggunaan</td><td>${durasi.toFixed(2)} jam</td></tr>
-                        <tr><td>Hari Penggunaan</td><td>${hari === 1 ? 'Hari Kerja' : 'Akhir Pekan (Tambahan 25%)'}</td></tr>
-                        <tr><td>Status Kerusakan</td><td>${kerusakan === 0 ? 'Tidak Ada' : (kerusakan === 1 ? 'Ringan (Denda Rp100.000)' : 'Berat (Denda Rp500.000)')}</td></tr>
-                        <tr><td>Biaya Dasar</td><td>Rp ${biayaDasar.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
-                        <tr><td>Tambahan Weekend (25%)</td><td>Rp ${tambahanWeekend.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
-                        <tr><td>Subtotal Penggunaan</td><td>Rp ${subtotalPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
-                        <tr><td>Diskon Internal (15%)</td><td>Rp ${diskon.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
-                        <tr><td>Biaya Setelah Diskon</td><td>Rp ${biayaSetelahDiskon.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
-                        <tr><td>Denda Kerusakan</td><td>Rp ${denda.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
-                        <tr><td><b>TOTAL BIAYA KELOMPOK</b></td><td><b>Rp ${totalBiaya.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</b></td></tr>
-                    </table>
-                </div>
-                <p class="sub" style="margin-top: 10px; color: var(--ok); font-weight: 600;">✔ Data kelompok berhasil diproses dan dimasukkan ke rekapitulasi. Silakan isi form di atas untuk kelompok berikutnya atau klik tombol Selesai.</p>
-            </div>
-        `;
-
-        document.getElementById('inputNama').value = '';
-        document.getElementById('inputNama').focus();
+        ambil('hasilRekap').hidden = true;
+        ambil('formKelompok').reset();
+        ambil('inputNama').focus();
     });
 
-    document.getElementById('btnSelesai').addEventListener('click', () => {
-        const divRekap = document.getElementById('hasilRekap');
-        divRekap.hidden = false;
-        divRekap.innerHTML = `
-            <div class="card" style="background: var(--accent-soft); margin-top: 20px;">
-                <h2>Modul B: Rekapitulasi Laboratorium</h2>
-                <div class="tablewrap">
-                    <table>
-                        <tr><th>Parameter Rekapitulasi</th><th>Hasil Akhir</th></tr>
-                        <tr><td>Jumlah Pengguna Internal</td><td>${rekapData.jumlahInternal}</td></tr>
-                        <tr><td>Jumlah Pengguna Eksternal</td><td>${rekapData.jumlahEksternal}</td></tr>
-                        <tr><td>Total Jam Penggunaan</td><td>${rekapData.totalJam.toFixed(2)} jam</td></tr>
-                        <tr><td>Jumlah Penggunaan Weekend</td><td>${rekapData.jumlahWeekend}</td></tr>
-                        <tr><td>Jumlah Kerusakan Ringan</td><td>${rekapData.jumlahRusakRingan}</td></tr>
-                        <tr><td>Jumlah Kerusakan Berat</td><td>${rekapData.jumlahRusakBerat}</td></tr>
-                        <tr><td>Total Diskon</td><td>Rp ${rekapData.totalDiskon.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
-                        <tr><td>Total Denda</td><td>Rp ${rekapData.totalDenda.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td></tr>
-                        <tr><td><b>TOTAL PENDAPATAN</b></td><td><b>Rp ${rekapData.totalPendapatan.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</b></td></tr>
-                    </table>
-                </div>
-                <p class="aksi" style="margin-top: 15px;">
-                    <button class="btn" type="button" id="btnReset">🔄 Reset / Mulai Program Baru</button>
-                </p>
-            </div>
-        `;
-        document.getElementById('btnReset').addEventListener('click', () => location.reload());
-        divRekap.scrollIntoView({ behavior: 'smooth' });
+    ambil('btnSelesai').addEventListener('click', () => {
+        bersihkanGalat();
+        const box = ambil('hasilRekap');
+        if (jumlahKelompok === 0) {
+            ambil('galatUmum').textContent = 'Belum ada kelompok yang diproses. Isi dan proses minimal satu kelompok dulu.';
+            return;
+        }
+        box.hidden = false;
+        box.innerHTML = `
+            <div class="card hasil">
+                <h2 style="margin-top:0">Rekapitulasi laboratorium</h2>
+                <div class="tablewrap"><table>
+                    <tr><th>Keterangan</th><th>Hasil</th></tr>
+                    ${barisRincian('Jumlah kelompok diproses', jumlahKelompok)}
+                    ${barisRincian('Pengguna internal', rekap.internal)}
+                    ${barisRincian('Pengguna eksternal', rekap.eksternal)}
+                    ${barisRincian('Total jam penggunaan', fmt2(rekap.totalJam) + ' jam')}
+                    ${barisRincian('Penggunaan akhir pekan', rekap.weekend)}
+                    ${barisRincian('Kerusakan ringan', rekap.rusakRingan)}
+                    ${barisRincian('Kerusakan berat', rekap.rusakBerat)}
+                    ${barisRincian('Total diskon', rupiah(rekap.totalDiskon))}
+                    ${barisRincian('Total denda', rupiah(rekap.totalDenda))}
+                    ${barisRincian('TOTAL PENDAPATAN', rupiah(rekap.totalPendapatan), true)}
+                </table></div>
+                <p class="aksi"><button class="btn" type="button" id="btnReset">Mulai dari awal</button></p>
+            </div>`;
+        ambil('btnReset').addEventListener('click', () => {
+            rekap = buatRekap();
+            jumlahKelompok = 0;
+            box.hidden = true;
+            ambil('hasilRincian').innerHTML = '';
+            ambil('formKelompok').reset();
+            bersihkanGalat();
+            window.scrollTo(0, 0);
+        });
+        box.scrollIntoView({ behavior: 'smooth' });
     });
 }
 
-// ---------- Render Dokumentasi Lengkap ----------
+// ---------- Mermaid (dimuat hanya saat halaman dokumentasi dibuka) ----------
+function gambarFlowchart(wadah) {
+    const target = wadah.querySelector('.mermaid');
+    if (!target) return;
+    const gambar = () => {
+        window.mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+        window.mermaid.run({ nodes: [target] }).catch(() => { target.classList.add('gagal'); });
+    };
+    if (window.mermaid) { gambar(); return; }
+    const sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js';
+    sc.onload = gambar;
+    sc.onerror = () => { target.insertAdjacentHTML('afterend', '<p class="galat">Flowchart gagal dimuat (cek koneksi internet). Teks flowchart tetap tersedia di atas.</p>'); };
+    document.head.appendChild(sc);
+}
+
+// ---------- Dokumentasi ----------
+function tabel(header, baris) {
+    return `<div class="tablewrap"><table>
+        <tr>${header.map(h => `<th>${h}</th>`).join('')}</tr>
+        ${baris.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}
+    </table></div>`;
+}
+
+function daftar(arr) { return '<ul>' + arr.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>'; }
+
 function renderDokumentasi(k, wadah) {
     const d = k.detail;
     wadah.innerHTML = `
         <h2>1. Analisis Masalah</h2>
-        <p><b>Rumusan masalah: </b>${d.rumusan}</p>
-        <h3>Ketentuan</h3>
-        <div class="tablewrap">
-            <table>
-                <tr><th>Aturan</th><th>Ketentuan</th></tr>
-                ${d.ketentuan.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`).join('')}
-            </table>
-        </div>
+        <p><b>Latar belakang.</b> ${esc(d.latarBelakang)}</p>
+        <h3>Rumusan masalah</h3>${daftar(d.rumusanMasalah)}
+        <h3>Tujuan program</h3>${daftar(d.tujuanProgram)}
+        <p><b>Pengguna program.</b> ${esc(d.penggunaProgram)}</p>
+        <h3>Ketentuan</h3>${tabel(['Aturan', 'Ketentuan'], d.ketentuan)}
+        <h3>Asumsi</h3>${daftar(d.asumsi)}
 
-        <h2>2. Algoritma Deskriptif</h2>
-        <ol>${d.algoritma.map(item => `<li>${item}</li>`).join('')}</ol>
+        <h2>2. Rancangan</h2>
+        <h3>Input, Proses, Output</h3>
+        <div class="tablewrap"><table>
+            <tr><th>Input</th><th>Proses</th><th>Output</th></tr>
+            <tr><td>${daftar(d.ipo.input)}</td><td>${daftar(d.ipo.proses)}</td><td>${daftar(d.ipo.output)}</td></tr>
+        </table></div>
+        <h3>Daftar variabel</h3>${tabel(['Variabel', 'Tipe', 'Nilai awal', 'Keterangan'], d.variabel)}
+        <h3>Algoritma deskriptif</h3>
+        <ol>${d.algoritma.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
+        <h3>Pseudocode</h3>
+        <pre class="pseudo"><code>${esc(d.pseudocode)}</code></pre>
+        <h3>Flowchart</h3>
+        <pre class="mermaid">${esc(d.flowchart)}</pre>
 
-        <h2>3. Pseudocode</h2>
-        <pre class="pseudo"><code>${d.pseudocode}</code></pre>
+        <h2>3. Implementasi</h2>
+        <p>Versi web (JavaScript) ada di <code>js/program.js</code> dan <code>js/app.js</code>; versi console C++ ada di <code>studi_kasus.cpp</code>.</p>
+        <pre><code>${esc(d.kode)}</code></pre>
 
-        <h2>4. Flowchart</h2>
-        <pre class="mermaid">${d.flowchart}</pre>
+        <h2>4. Pengujian</h2>
+        <div class="tablewrap"><table>
+            <tr><th>No.</th><th>Skenario &amp; masukan</th><th>Diharapkan</th><th>Aktual</th><th>Status</th></tr>
+            ${d.pengujian.map(p => `<tr><td>${p.no}</td><td><b>${esc(p.skenario)}</b><br><small>${esc(p.data)}</small></td><td>${esc(p.harapan)}</td><td>${esc(p.aktual)}</td><td><span class="${p.ok ? 'ok' : 'bad'}">${p.ok ? 'Sesuai' : 'Tidak sesuai'}</span></td></tr>`).join('')}
+        </table></div>
+        <h3>Tabel penelusuran (trace): percabangan</h3>
+        <p>${esc(d.traceCabInfo)}</p>
+        ${tabel(['Langkah', 'Pernyataan / kondisi', 'Evaluasi', 'Nilai'], d.traceCab)}
+        <h3>Tabel penelusuran (trace): perulangan kelompok</h3>
+        <p>${esc(d.traceLoopInfo)}</p>
+        ${tabel(['Putaran', 'Lanjut?', 'Internal', 'Eksternal', 'Jam', 'Weekend', 'Ringan', 'Berat', 'Diskon', 'Denda', 'Pendapatan'], d.traceLoop)}
+        <div class="todo">Tempel tangkapan layar hasil menjalankan program di sini (folder gambar/).</div>
 
-        <h2>5. Source Code C++</h2>
-        <pre><code>${d.kode}</code></pre>
-
-        <h2>6. Tabel Pengujian</h2>
-        <div class="tablewrap">
-            <table>
-                <tr><th>No.</th><th>Skenario & Data Masukan</th><th>Hasil Diharapkan</th><th>Hasil Aktual</th><th>Status</th></tr>
-                ${d.pengujian.map(p => `<tr><td>${p.no}</td><td><b>${p.skenario}</b><br><small>${p.data}</small></td><td>${p.harapan}</td><td>${p.aktual}</td><td><span class="${p.ok ? 'ok' : 'bad'}">${p.ok ? 'Berhasil' : 'Gagal'}</span></td></tr>`).join('')}
-            </table>
-        </div>
-
-        <h2>7. Daftar Kesalahan dan Perbaikan</h2>
-        <div class="tablewrap">
-            <table>
-                <tr><th>Kesalahan yang Ditemukan</th><th>Perbaikan</th></tr>
-                ${d.kesalahan.map(err => `<tr><td>${err[0]}</td><td>${err[1]}</td></tr>`).join('')}
-            </table>
-        </div>
-    `;
-    if (window.mermaid) {
-        window.mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
-        window.mermaid.run({ nodes: wadah.querySelectorAll('.mermaid') });
-    }
+        <h2>5. Kesalahan yang Ditemukan dan Perbaikan</h2>
+        ${tabel(['Kesalahan', 'Perbaikan'], d.kesalahan)}`;
+    gambarFlowchart(wadah);
 }
 
-// ---------- Navigasi Berdasarkan Hash ----------
+// ---------- Navigasi berdasarkan hash ----------
 function tampilkan() {
     const m = location.hash.match(/^#kasus-(\d+)(\/dokumentasi)?$/);
     const beranda = document.getElementById('beranda');
@@ -242,34 +273,22 @@ function tampilkan() {
     if (k) {
         beranda.hidden = true;
         detail.hidden = false;
-        
-        const isDokumentasi = !!m[2];
+        const dok = !!m[2];
         detail.innerHTML = `
             <p><a href="#beranda">← Kembali ke daftar</a></p>
-            <h1>Studi Kasus ${String(k.no).padStart(2, '0')}: ${k.judul}</h1>
-            <p class="sub">Modul A (proses utama) + Modul B (rekapitulasi)</p>
-
+            <h1>Studi Kasus ${String(k.no).padStart(2, '0')}: ${esc(k.judul)}</h1>
             <div class="tabs">
-                <a class="tab ${!isDokumentasi ? 'aktif' : ''}" href="#kasus-${k.no}">▶ Coba Program</a>
-                <a class="tab ${isDokumentasi ? 'aktif' : ''}" href="#kasus-${k.no}/dokumentasi">📄 Dokumentasi</a>
+                <a class="tab ${dok ? '' : 'aktif'}" href="#kasus-${k.no}">▶ Coba Program</a>
+                <a class="tab ${dok ? 'aktif' : ''}" href="#kasus-${k.no}/dokumentasi">📄 Dokumentasi</a>
             </div>
-
-            <div class="isi-tab" id="kontenTab"></div>
-        `;
-
-        const kontenTab = document.getElementById('kontenTab');
-        if (isDokumentasi) {
-            renderDokumentasi(k, kontenTab);
-        } else {
-            renderProgram(kontenTab);
-        }
+            <div id="kontenTab"></div>`;
+        const isi = document.getElementById('kontenTab');
+        if (dok) renderDokumentasi(k, isi); else renderProgram(isi);
         window.scrollTo(0, 0);
     } else {
         detail.hidden = true;
         beranda.hidden = false;
-        if (location.hash === '#daftar') {
-            document.getElementById('daftar').scrollIntoView();
-        }
+        if (location.hash === '#daftar') document.getElementById('daftar').scrollIntoView();
     }
 }
 

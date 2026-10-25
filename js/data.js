@@ -67,7 +67,7 @@ const STUDI_KASUS = [
   "Menghasilkan rekapitulasi penggunaan dan pendapatan laboratorium."
 ],
 
-"penggunaProgram": "Pengguna program adalah petugas atau pengelola laboratorium yang memasukkan data kelompok pengguna dan melihat hasil perhitungan biaya serta rekapitulasi."
+"penggunaProgram": "Pengguna program adalah petugas atau pengelola laboratorium yang memasukkan data kelompok pengguna dan melihat hasil perhitungan biaya serta rekapitulasi.",
 
      
       "ketentuan": [

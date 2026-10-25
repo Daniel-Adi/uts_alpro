@@ -1,280 +1,127 @@
-const TARIF_JAM_AWAL = 50000.0;
-const TARIF_JAM_LANJUT = 35000.0;
-const BATAS_JAM_AWAL = 2.0;
-const PERSEN_WEEKEND = 0.25;
-const PERSEN_DISKON = 0.15;
-const DENDA_RINGAN = 100000.0;
-const DENDA_BERAT = 500000.0;
-const BATAS_DURASI_MAKS = 24.0;
+/**
+ * Logika program Studi Kasus 08: Sistem Biaya Penggunaan Laboratorium (JavaScript).
+ * Berisi aturan biaya, validasi input, perhitungan biaya (Modul A), dan rekapitulasi (Modul B).
+ * Tampilan form dan hasil ada di js/app.js.
+ */
 
-// Format angka seperti cout << fixed << setprecision(2) (pembulatan half-even pada nilai biner eksak)
+// ---------- Aturan sesuai soal ----------
+const ATURAN = {
+    tarifAwal: 50000,        // 2 jam pertama, per jam
+    tarifLanjut: 35000,      // jam berikutnya, per jam
+    batasJamAwal: 2,
+    persenWeekend: 0.25,     // tambahan akhir pekan
+    persenDiskon: 0.15,      // diskon pengguna internal (tidak berlaku pada denda)
+    dendaRingan: 100000,
+    dendaBerat: 500000,
+    durasiMaks: 24           // batas logis durasi per kelompok (jam)
+};
+
+// ---------- Format angka ----------
+// Dua desimal dengan pembulatan yang sama seperti cout << fixed << setprecision(2) pada C++
 function fmt2(x) {
     const neg = x < 0 || Object.is(x, -0);
-    const s = Math.abs(x).toFixed(60);
-    const [ip, fp] = s.split('.');
+    const [ip, fp] = Math.abs(x).toFixed(60).split('.');
     let digits = ip + fp.slice(0, 2);
-    const rest = fp.slice(2);
-    let up = false;
-    if (rest[0] > '5') up = true;
-    else if (rest[0] === '5') {
-        if (/[1-9]/.test(rest.slice(1))) up = true;
-        else up = (Number(digits[digits.length - 1]) % 2 === 1);   // tepat di tengah: genap terdekat
-    }
-    if (up) {
-        const n = (BigInt(digits) + 1n).toString().padStart(3, '0');
-        digits = n;
-    }
-    const out = digits.slice(0, -2) + '.' + digits.slice(-2);
-    return (neg ? '-' : '') + out;
+    const sisa = fp.slice(2);
+    let naik = false;
+    if (sisa[0] > '5') naik = true;
+    else if (sisa[0] === '5') naik = /[1-9]/.test(sisa.slice(1)) ? true : Number(digits[digits.length - 1]) % 2 === 1;
+    if (naik) digits = (BigInt(digits) + 1n).toString().padStart(3, '0');
+    return (neg ? '-' : '') + digits.slice(0, -2) + '.' + digits.slice(-2);
+}
+// Contoh: 243437.5 -> "Rp 243.437,50"
+function rupiah(x) {
+    const [bulat, desimal] = fmt2(x).split('.');
+    return 'Rp ' + bulat.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + desimal;
 }
 
-// ---------- Penyangga input yang meniru std::cin ----------
-class Cin {
-    constructor() { this.buf = ''; this.pos = 0; }
-    push(baris) { this.buf += baris + '\n'; }
-    *tungguSampaiAdaData() {
-        while (true) {
-            while (this.pos < this.buf.length && /\s/.test(this.buf[this.pos])) this.pos++;
-            if (this.pos < this.buf.length) return;
-            yield 'input';
-        }
-    }
-    *bacaAngka(regex, ubah) {            // meniru cin >> int / double; return {ok, nilai}
-        yield* this.tungguSampaiAdaData();
-        const m = regex.exec(this.buf.slice(this.pos));
-        if (!m) return { ok: false, nilai: 0 };
-        this.pos += m[0].length;
-        const nilai = ubah(m[0]);
-        return nilai === null ? { ok: false, nilai: 0 } : { ok: true, nilai };
-    }
-    *bacaInt() {
-        return yield* this.bacaAngka(/^[+-]?\d+/, t => {
-            const n = Number(t);
-            return (n >= -2147483648 && n <= 2147483647) ? n : null;
-        });
-    }
-    *bacaDouble() {
-        // cin >> double: eksponen yang tidak lengkap (mis. "1e" atau "1e+") ikut terbaca lalu gagal
-        yield* this.tungguSampaiAdaData();
-        const rusak = /^[+-]?(\d+\.?\d*|\.\d+)[eE][+-]?(?![\d])/.exec(this.buf.slice(this.pos));
-        if (rusak) { this.pos += rusak[0].length; return { ok: false, nilai: 0 }; }
-        return yield* this.bacaAngka(/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?/, t => {
-            const n = Number(t);
-            return Number.isFinite(n) ? n : null;
-        });
-    }
-    *bacaChar() {                          // cin >> char
-        yield* this.tungguSampaiAdaData();
-        return this.buf[this.pos++];
-    }
-    *getline() {
-        while (true) {
-            const i = this.buf.indexOf('\n', this.pos);
-            if (i >= 0) { const s = this.buf.slice(this.pos, i); this.pos = i + 1; return s; }
-            yield 'input';
-        }
-    }
-    *ignoreSampaiBarisBaru() {             // cin.ignore(max, '\n')
-        while (true) {
-            const i = this.buf.indexOf('\n', this.pos);
-            if (i >= 0) { this.pos = i + 1; return; }
-            yield 'input';
-        }
-    }
-}
-
-// ---------- Program utama (padanan int main() di studi_kasus.cpp) ----------
-// io.print(teks) menampilkan keluaran; io.tahap(kode) memberi tahu tahap/prompt yang sedang aktif.
-function* programLaboratorium(io, cin) {
-    const cout = t => io.print(t);
-
-    // Variabel rekapitulasi (Modul B)
-    let jumlahInternal = 0, jumlahEksternal = 0, totalJam = 0.0, jumlahWeekend = 0;
-    let jumlahRusakRingan = 0, jumlahRusakBerat = 0;
-    let totalDiskon = 0.0, totalDenda = 0.0, totalPendapatan = 0.0;
-    let ulang;
-
-    cout('==================================================\n');
-    cout('     SISTEM BIAYA PENGGUNAAN LABORATORIUM\n');
-    cout('==================================================\n');
-
-    do {
-        let namaKelompok, jenisPengguna, durasi, hari, statusKerusakan, valid;
-
-        // ================= MODUL A : PROSES UTAMA =================
-        cout('\n--- INPUT DATA KELOMPOK ---\n');
-        cout('Nama Kelompok: ');
-        io.tahap('nama');
-        namaKelompok = yield* cin.getline();
-        while (namaKelompok.length === 0) {
-            cout('  [!] Nama kelompok tidak boleh kosong. Ulangi: ');
-            namaKelompok = yield* cin.getline();
-        }
-
-        valid = false;
-        while (!valid) {
-            cout('Jenis Pengguna (1=Internal, 2=Eksternal): ');
-            io.tahap('jenis');
-            const r = yield* cin.bacaInt();
-            if (r.ok) {
-                jenisPengguna = r.nilai;
-                if (jenisPengguna === 1 || jenisPengguna === 2) valid = true;
-                else cout('  [!] Pilihan harus 1 atau 2.\n');
-            } else {
-                cout('  [!] Input harus berupa angka.\n');
-                yield* cin.ignoreSampaiBarisBaru();
-            }
-        }
-
-        valid = false;
-        while (!valid) {
-            cout('Durasi Penggunaan (jam, maksimal 24): ');
-            io.tahap('durasi');
-            const r = yield* cin.bacaDouble();
-            if (r.ok) {
-                durasi = r.nilai;
-                if (durasi > 0 && durasi <= BATAS_DURASI_MAKS) valid = true;
-                else cout('  [!] Durasi harus lebih dari 0 dan maksimal 24 jam.\n');
-            } else {
-                cout('  [!] Input harus berupa angka.\n');
-                yield* cin.ignoreSampaiBarisBaru();
-            }
-        }
-
-        valid = false;
-        while (!valid) {
-            cout('Hari Penggunaan (1=Hari Kerja, 2=Akhir Pekan): ');
-            io.tahap('hari');
-            const r = yield* cin.bacaInt();
-            if (r.ok) {
-                hari = r.nilai;
-                if (hari === 1 || hari === 2) valid = true;
-                else cout('  [!] Pilihan harus 1 atau 2.\n');
-            } else {
-                cout('  [!] Input harus berupa angka.\n');
-                yield* cin.ignoreSampaiBarisBaru();
-            }
-        }
-
-        valid = false;
-        while (!valid) {
-            cout('Status Kerusakan (0=Tidak Ada, 1=Ringan, 2=Berat): ');
-            io.tahap('kerusakan');
-            const r = yield* cin.bacaInt();
-            if (r.ok) {
-                statusKerusakan = r.nilai;
-                if (statusKerusakan >= 0 && statusKerusakan <= 2) valid = true;
-                else cout('  [!] Pilihan harus 0, 1, atau 2.\n');
-            } else {
-                cout('  [!] Input harus berupa angka.\n');
-                yield* cin.ignoreSampaiBarisBaru();
-            }
-        }
-
-        // ----- Proses perhitungan biaya -----
-        io.tahap('hitung');
-        let biayaDasar;
-        if (durasi <= BATAS_JAM_AWAL) {
-            biayaDasar = durasi * TARIF_JAM_AWAL;
-        } else {
-            biayaDasar = (BATAS_JAM_AWAL * TARIF_JAM_AWAL) + ((durasi - BATAS_JAM_AWAL) * TARIF_JAM_LANJUT);
-        }
-
-        let tambahanWeekend = 0;
-        if (hari === 2) tambahanWeekend = biayaDasar * PERSEN_WEEKEND;
-        const subtotalPenggunaan = biayaDasar + tambahanWeekend;
-
-        let diskon = 0;
-        if (jenisPengguna === 1) diskon = subtotalPenggunaan * PERSEN_DISKON;
-        const biayaSetelahDiskon = subtotalPenggunaan - diskon;
-
-        let denda = 0;
-        if (statusKerusakan === 1) denda = DENDA_RINGAN;
-        else if (statusKerusakan === 2) denda = DENDA_BERAT;
-
-        const totalBiaya = biayaSetelahDiskon + denda;
-
-        // ----- Tampilkan rincian biaya -----
-        io.tahap('rincian');
-        cout('\n==================================================\n');
-        cout('  RINCIAN BIAYA : ' + namaKelompok + '\n');
-        cout('==================================================\n');
-        cout('Jenis Pengguna       : ' + (jenisPengguna === 1 ? 'Internal' : 'Eksternal') + '\n');
-        cout('Durasi               : ' + fmt2(durasi) + ' jam\n');
-        cout('Hari                 : ' + (hari === 1 ? 'Hari Kerja' : 'Akhir Pekan') + '\n');
-        cout('Status Kerusakan     : ');
-        if (statusKerusakan === 0) cout('Tidak Ada\n');
-        else if (statusKerusakan === 1) cout('Ringan\n');
-        else cout('Berat\n');
-        cout('--------------------------------------------------\n');
-        cout('Biaya Dasar          : Rp ' + fmt2(biayaDasar) + '\n');
-        cout('Tambahan Weekend 25% : Rp ' + fmt2(tambahanWeekend) + '\n');
-        cout('Subtotal Penggunaan  : Rp ' + fmt2(subtotalPenggunaan) + '\n');
-        cout('Diskon Internal 15%  : Rp ' + fmt2(diskon) + '\n');
-        cout('Biaya Setelah Diskon : Rp ' + fmt2(biayaSetelahDiskon) + '\n');
-        cout('Denda Kerusakan      : Rp ' + fmt2(denda) + '\n');
-        cout('--------------------------------------------------\n');
-        cout('TOTAL BIAYA          : Rp ' + fmt2(totalBiaya) + '\n');
-        cout('==================================================\n');
-
-        // ================= MODUL B : PENGUMPULAN DATA REKAPITULASI =================
-        io.tahap('rekap');
-        if (jenisPengguna === 1) jumlahInternal++;
-        else jumlahEksternal++;
-        totalJam = totalJam + durasi;
-        if (hari === 2) jumlahWeekend++;
-        if (statusKerusakan === 1) jumlahRusakRingan++;
-        else if (statusKerusakan === 2) jumlahRusakBerat++;
-        totalDiskon = totalDiskon + diskon;
-        totalDenda = totalDenda + denda;
-        totalPendapatan = totalPendapatan + totalBiaya;
-
-        // ----- Pilihan mengulang atau mengakhiri -----
-        valid = false;
-        while (!valid) {
-            cout('\nProses kelompok lain? (y/n): ');
-            io.tahap('ulang');
-            ulang = yield* cin.bacaChar();
-            yield* cin.ignoreSampaiBarisBaru();
-            if (ulang === 'y' || ulang === 'Y' || ulang === 'n' || ulang === 'N') valid = true;
-            else cout("  [!] Masukkan 'y' atau 'n'.\n");
-        }
-    } while (ulang === 'y' || ulang === 'Y');
-
-    // ================= MODUL B : TAMPILKAN REKAPITULASI =================
-    io.tahap('selesai');
-    cout('\n==================================================\n');
-    cout('         REKAPITULASI LABORATORIUM\n');
-    cout('==================================================\n');
-    cout('Jumlah Pengguna Internal  : ' + jumlahInternal + '\n');
-    cout('Jumlah Pengguna Eksternal : ' + jumlahEksternal + '\n');
-    cout('Total Jam Penggunaan      : ' + fmt2(totalJam) + ' jam\n');
-    cout('Jumlah Penggunaan Weekend : ' + jumlahWeekend + '\n');
-    cout('Jumlah Kerusakan Ringan   : ' + jumlahRusakRingan + '\n');
-    cout('Jumlah Kerusakan Berat    : ' + jumlahRusakBerat + '\n');
-    cout('--------------------------------------------------\n');
-    cout('Total Diskon              : Rp ' + fmt2(totalDiskon) + '\n');
-    cout('Total Denda               : Rp ' + fmt2(totalDenda) + '\n');
-    cout('TOTAL PENDAPATAN          : Rp ' + fmt2(totalPendapatan) + '\n');
-    cout('==================================================\n');
-    cout('Program selesai. Terima kasih!\n');
-}
-
-// ---------- Penjalan program (dipakai halaman web dan pengujian) ----------
-// Mengembalikan objek sesi: kirim(baris) untuk mengirim satu baris input.
-function mulaiSesi(onPrint, onTahap) {
-    const cin = new Cin();
-    const sesi = { selesai: false, tahap: 'mulai' };
-    const io = {
-        print: t => onPrint && onPrint(t),
-        tahap: k => { sesi.tahap = k; onTahap && onTahap(k); }
+// ---------- MODUL A (1): validasi input ----------
+// masukan: {nama, jenis, durasi, hari, kerusakan} (semua berupa teks dari form)
+// return: {valid, galat:{nama, jenis, durasi, hari, kerusakan}, data}
+function validasiInput(masukan) {
+    const galat = {};
+    const pilihan = (nilai, boleh) => {
+        const teks = String(nilai === undefined || nilai === null ? '' : nilai).trim();
+        return (teks !== '' && boleh.includes(Number(teks))) ? Number(teks) : null;
     };
-    const gen = programLaboratorium(io, cin);
-    const maju = () => { const r = gen.next(); if (r.done) { sesi.selesai = true; sesi.tahap = 'selesai'; onTahap && onTahap('selesai'); } };
-    sesi.kirim = baris => { if (sesi.selesai) return; cin.push(baris); maju(); };
-    maju();
-    return sesi;
+
+    const nama = String(masukan.nama || '').trim();
+    if (nama === '') galat.nama = 'Nama kelompok tidak boleh kosong.';
+
+    const jenis = pilihan(masukan.jenis, [1, 2]);
+    if (jenis === null) galat.jenis = 'Pilih jenis pengguna (Internal atau Eksternal).';
+
+    let durasi = null;
+    const teksDurasi = String(masukan.durasi || '').trim().replace(',', '.');
+    if (teksDurasi === '') galat.durasi = 'Durasi wajib diisi.';
+    else if (/^-/.test(teksDurasi) && /^-(\d+\.?\d*|\.\d+)$/.test(teksDurasi)) galat.durasi = 'Durasi tidak boleh negatif.';
+    else if (!/^(\d+\.?\d*|\.\d+)$/.test(teksDurasi)) galat.durasi = 'Durasi harus berupa angka (contoh: 2 atau 1.5).';
+    else {
+        durasi = Number(teksDurasi);
+        if (durasi <= 0) { galat.durasi = 'Durasi harus lebih dari 0.'; durasi = null; }
+        else if (durasi > ATURAN.durasiMaks) { galat.durasi = 'Durasi maksimal ' + ATURAN.durasiMaks + ' jam.'; durasi = null; }
+    }
+
+    const hari = pilihan(masukan.hari, [1, 2]);
+    if (hari === null) galat.hari = 'Pilih hari penggunaan (Hari Kerja atau Akhir Pekan).';
+
+    const kerusakan = pilihan(masukan.kerusakan, [0, 1, 2]);
+    if (kerusakan === null) galat.kerusakan = 'Pilih status kerusakan.';
+
+    return { valid: Object.keys(galat).length === 0, galat, data: { nama, jenis, durasi, hari, kerusakan } };
 }
 
-if (typeof module !== 'undefined') module.exports = { mulaiSesi, fmt2 };
+// ---------- MODUL A (2): perhitungan biaya ----------
+// data: {jenis (1 internal, 2 eksternal), durasi (jam), hari (1 kerja, 2 akhir pekan), kerusakan (0, 1, 2)}
+function hitungBiaya(data) {
+    // 1) Biaya dasar: 2 jam pertama Rp50.000/jam, jam berikutnya Rp35.000/jam
+    let biayaDasar;
+    if (data.durasi <= ATURAN.batasJamAwal) {
+        biayaDasar = data.durasi * ATURAN.tarifAwal;
+    } else {
+        biayaDasar = (ATURAN.batasJamAwal * ATURAN.tarifAwal) + ((data.durasi - ATURAN.batasJamAwal) * ATURAN.tarifLanjut);
+    }
 
+    // 2) Tambahan akhir pekan 25%
+    let tambahanWeekend = 0;
+    if (data.hari === 2) tambahanWeekend = biayaDasar * ATURAN.persenWeekend;
+    const subtotal = biayaDasar + tambahanWeekend;
+
+    // 3) Diskon internal 15% (hanya dari biaya penggunaan)
+    let diskon = 0;
+    if (data.jenis === 1) diskon = subtotal * ATURAN.persenDiskon;
+    const setelahDiskon = subtotal - diskon;
+
+    // 4) Denda kerusakan (tidak terkena diskon)
+    let denda = 0;
+    if (data.kerusakan === 1) denda = ATURAN.dendaRingan;
+    else if (data.kerusakan === 2) denda = ATURAN.dendaBerat;
+
+    // 5) Total biaya
+    const total = setelahDiskon + denda;
+    return { biayaDasar, tambahanWeekend, subtotal, diskon, setelahDiskon, denda, total };
+}
+
+// ---------- MODUL B: rekapitulasi ----------
+function buatRekap() {
+    return { internal: 0, eksternal: 0, totalJam: 0, weekend: 0, rusakRingan: 0, rusakBerat: 0,
+             totalDiskon: 0, totalDenda: 0, totalPendapatan: 0 };
+}
+function perbaruiRekap(rekap, data, hasil) {
+    if (data.jenis === 1) rekap.internal++;
+    else rekap.eksternal++;
+
+    rekap.totalJam = rekap.totalJam + data.durasi;
+
+    if (data.hari === 2) rekap.weekend++;
+
+    if (data.kerusakan === 1) rekap.rusakRingan++;
+    else if (data.kerusakan === 2) rekap.rusakBerat++;
+
+    rekap.totalDiskon = rekap.totalDiskon + hasil.diskon;
+    rekap.totalDenda = rekap.totalDenda + hasil.denda;
+    rekap.totalPendapatan = rekap.totalPendapatan + hasil.total;
+    return rekap;
+}
+
+if (typeof module !== 'undefined') module.exports = { ATURAN, fmt2, rupiah, validasiInput, hitungBiaya, buatRekap, perbaruiRekap };
