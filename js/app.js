@@ -1,24 +1,20 @@
 /**
- * Logika halaman: menampilkan daftar studi kasus dan detail studi kasus 08
- * Murni menggunakan DOM standar tanpa fungsi pembantu el().
+ * Logika halaman: menampilkan beranda, daftar studi kasus, 
+ * Form interaktif Modul A & B, serta Dokumentasi lengkap Studi Kasus 08.
  */
 
 // ---------- Beranda ----------
 function renderBeranda() {
     document.getElementById('subJudul').textContent = 'From Problem to Program · ' + IDENTITAS.mataKuliah;
-    
-    // Render Kartu Identitas
+
     const kartu = document.getElementById('kartuIdentitas');
     const utama = STUDI_KASUS.find(k => k.utama);
-    
     kartu.innerHTML = `
         <h3 style="margin-top:0">Studi Kasus ${String(utama.no).padStart(2, '0')}: ${utama.judul}</h3>
         <p>${utama.detail.ringkasan}</p>
         <div class="tablewrap">
             <table>
-                <thead>
-                    <tr><th>Anggota</th><th>NIM</th><th>Tanggung jawab utama</th></tr>
-                </thead>
+                <thead><tr><th>Anggota</th><th>NIM</th><th>Tanggung jawab utama</th></tr></thead>
                 <tbody>
                     ${IDENTITAS.anggota.map(a => `<tr><td>${a.nama}</td><td>${a.nim}</td><td>${a.modul}</td></tr>`).join('')}
                 </tbody>
@@ -31,22 +27,14 @@ function renderBeranda() {
         </p>
     `;
 
-    // Render Daftar Kasus
     const grid = document.getElementById('daftarKasus');
     grid.innerHTML = '';
     STUDI_KASUS.forEach(k => {
         const nomor = String(k.no).padStart(2, '0');
         if (k.detail) {
-            const a = document.createElement('a');
-            a.className = 'kasus utama';
-            a.href = `#kasus-${k.no}`;
-            a.innerHTML = `<span class="no">${nomor}</span><span><b>${k.judul}</b><small>Studi kasus kelompok ini · klik untuk mencoba program →</small></span>`;
-            grid.appendChild(a);
+            grid.innerHTML += `<a class="kasus utama" href="#kasus-${k.no}"><span class="no">${nomor}</span><span><b>${k.judul}</b><small>Studi kasus kelompok ini · klik untuk mencoba program →</small></span></a>`;
         } else {
-            const div = document.createElement('div');
-            div.className = 'kasus';
-            div.innerHTML = `<span class="no">${nomor}</span><span>${k.judul}</span>`;
-            grid.appendChild(div);
+            grid.innerHTML += `<div class="kasus"><span class="no">${nomor}</span><span>${k.judul}</span></div>`;
         }
     });
 }
@@ -120,7 +108,6 @@ function renderProgram(wadah) {
         if (!nama) { alert('Nama kelompok tidak boleh kosong!'); return; }
         if (durasi <= 0 || durasi > 24) { alert('Durasi harus lebih dari 0 dan maksimal 24 jam!'); return; }
 
-        // Kalkulasi Biaya
         const TARIF_JAM_AWAL = 50000.0;
         const TARIF_JAM_LANJUT = 35000.0;
         let biayaDasar = durasi <= 2 ? durasi * TARIF_JAM_AWAL : (2 * TARIF_JAM_AWAL) + ((durasi - 2) * TARIF_JAM_LANJUT);
@@ -131,7 +118,6 @@ function renderProgram(wadah) {
         let denda = kerusakan === 1 ? 100000.0 : (kerusakan === 2 ? 500000.0 : 0);
         let totalBiaya = biayaSetelahDiskon + denda;
 
-        // Akumulasi Modul B
         if (jenis === 1) rekapData.jumlahInternal++; else rekapData.jumlahEksternal++;
         rekapData.totalJam += durasi;
         if (hari === 2) rekapData.jumlahWeekend++;
@@ -141,7 +127,6 @@ function renderProgram(wadah) {
         rekapData.totalDenda += denda;
         rekapData.totalPendapatan += totalBiaya;
 
-        // Tampilkan Rincian Kelompok
         document.getElementById('hasilRincian').innerHTML = `
             <div class="card" style="border-color: var(--accent); margin-top: 15px;">
                 <h3>Rincian Biaya Kelompok: ${nama}</h3>
@@ -199,7 +184,7 @@ function renderProgram(wadah) {
     });
 }
 
-// ---------- Render Dokumentasi ----------
+// ---------- Render Dokumentasi Lengkap ----------
 function renderDokumentasi(k, wadah) {
     const d = k.detail;
     wadah.innerHTML = `
@@ -224,6 +209,22 @@ function renderDokumentasi(k, wadah) {
 
         <h2>5. Source Code C++</h2>
         <pre><code>${d.kode}</code></pre>
+
+        <h2>6. Tabel Pengujian</h2>
+        <div class="tablewrap">
+            <table>
+                <tr><th>No.</th><th>Skenario & Data Masukan</th><th>Hasil Diharapkan</th><th>Hasil Aktual</th><th>Status</th></tr>
+                ${d.pengujian.map(p => `<tr><td>${p.no}</td><td><b>${p.skenario}</b><br><small>${p.data}</small></td><td>${p.harapan}</td><td>${p.aktual}</td><td><span class="${p.ok ? 'ok' : 'bad'}">${p.ok ? 'Berhasil' : 'Gagal'}</span></td></tr>`).join('')}
+            </table>
+        </div>
+
+        <h2>7. Daftar Kesalahan dan Perbaikan</h2>
+        <div class="tablewrap">
+            <table>
+                <tr><th>Kesalahan yang Ditemukan</th><th>Perbaikan</th></tr>
+                ${d.kesalahan.map(err => `<tr><td>${err[0]}</td><td>${err[1]}</td></tr>`).join('')}
+            </table>
+        </div>
     `;
     if (window.mermaid) {
         window.mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
@@ -231,7 +232,7 @@ function renderDokumentasi(k, wadah) {
     }
 }
 
-// ---------- Navigasi berdasarkan Hash ----------
+// ---------- Navigasi Berdasarkan Hash ----------
 function tampilkan() {
     const m = location.hash.match(/^#kasus-(\d+)(\/dokumentasi)?$/);
     const beranda = document.getElementById('beranda');
@@ -241,20 +242,26 @@ function tampilkan() {
     if (k) {
         beranda.hidden = true;
         detail.hidden = false;
-        document.getElementById('judulKasus').textContent = `Studi Kasus ${String(k.no).padStart(2, '0')}: ${k.judul}`;
         
         const isDokumentasi = !!m[2];
-        document.getElementById('tabProgram').className = 'tab' + (!isDokumentasi ? ' aktif' : '');
-        document.getElementById('tabDokumentasi').className = 'tab' + (isDokumentasi ? ' aktif' : '');
-        document.getElementById('tabProgram').href = `#kasus-${k.no}`;
-        document.getElementById('tabDokumentasi').href = `#kasus-${k.no}/dokumentasi`;
+        detail.innerHTML = `
+            <p><a href="#beranda">← Kembali ke daftar</a></p>
+            <h1>Studi Kasus ${String(k.no).padStart(2, '0')}: ${k.judul}</h1>
+            <p class="sub">Modul A (proses utama) + Modul B (rekapitulasi)</p>
 
-        const konten = document.getElementById('kontenTab');
-        konten.innerHTML = '';
+            <div class="tabs">
+                <a class="tab ${!isDokumentasi ? 'aktif' : ''}" href="#kasus-${k.no}">▶ Coba Program</a>
+                <a class="tab ${isDokumentasi ? 'aktif' : ''}" href="#kasus-${k.no}/dokumentasi">📄 Dokumentasi</a>
+            </div>
+
+            <div class="isi-tab" id="kontenTab"></div>
+        `;
+
+        const kontenTab = document.getElementById('kontenTab');
         if (isDokumentasi) {
-            renderDokumentasi(k, konten);
+            renderDokumentasi(k, kontenTab);
         } else {
-            renderProgram(konten);
+            renderProgram(kontenTab);
         }
         window.scrollTo(0, 0);
     } else {
