@@ -256,7 +256,10 @@ function renderDokumentasi(k, wadah) {
         <h3>Tabel penelusuran (trace): perulangan kelompok</h3>
         <p>${esc(d.traceLoopInfo)}</p>
         ${tabel(['Putaran', 'Lanjut?', 'Internal', 'Eksternal', 'Jam', 'Weekend', 'Ringan', 'Berat', 'Diskon', 'Denda', 'Pendapatan'], d.traceLoop)}
-        <div class="todo">Tempel tangkapan layar hasil menjalankan program di sini (folder gambar/).</div>
+        <div class="todo" style="text-align: center; margin: 20px 0;">
+            <p style="font-weight: bold; margin-bottom: 8px;">Tangkapan Layar Hasil Program:</p>
+            <img src="img/hasil_program.png" alt="Hasil Program" style="max-width: 100%; height: auto; border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        </div>
 
         <h2>5. Kesalahan yang Ditemukan dan Perbaikan</h2>
         ${tabel(['Kesalahan', 'Perbaikan'], d.kesalahan)}`;

@@ -1,8 +1,3 @@
-// STUDI KASUS 08 - SISTEM BIAYA PENGGUNAAN LABORATORIUM
-// PROGRAM TERINTEGRASI = MODUL A (Proses Utama) + MODUL B (Rekapitulasi)
-// Memproses beberapa kelompok pengguna (perulangan), menampilkan rincian biaya
-// tiap kelompok, lalu menampilkan rekapitulasi laboratorium.
-
 #include <iostream>
 #include <string>
 #include <iomanip>
@@ -45,7 +40,6 @@ int main() {
         bool   valid;
 
         // ================= MODUL A : PROSES UTAMA =================
-        // ----- Input data kelompok (dengan validasi) -----
         cout << "\n--- INPUT DATA KELOMPOK ---\n";
         cout << "Nama Kelompok: ";
         getline(cin, namaKelompok);
@@ -107,7 +101,6 @@ int main() {
         }
 
         // ----- Proses perhitungan biaya -----
-        // 1) Biaya dasar: 2 jam pertama Rp50.000/jam, jam berikutnya Rp35.000/jam
         double biayaDasar;
         if (durasi <= BATAS_JAM_AWAL) {
             biayaDasar = durasi * TARIF_JAM_AWAL;
@@ -181,7 +174,6 @@ int main() {
         totalDenda      = totalDenda      + denda;
         totalPendapatan = totalPendapatan + totalBiaya;
 
-        // ----- Pilihan mengulang atau mengakhiri -----
         valid = false;
         while (!valid) {
             cout << "\nProses kelompok lain? (y/n): ";
@@ -190,15 +182,13 @@ int main() {
                 if (ulang == 'y' || ulang == 'Y' || ulang == 'n' || ulang == 'N') valid = true;
                 else cout << "  [!] Masukkan 'y' atau 'n'.\n";
             } else {
-                // input terputus (EOF): akhiri proses dengan wajar
                 ulang = 'n';
                 valid = true;
             }
         }
     } while (ulang == 'y' || ulang == 'Y');
 
-    // ================= MODUL B : TAMPILKAN REKAPITULASI =================
-    // ===== Tampilkan rekapitulasi laboratorium =====
+    // ================= MODUL B : TAMPILKAN REKAPITULASI ================
     cout << fixed << setprecision(2);
     cout << "\n==================================================\n";
     cout << "         REKAPITULASI LABORATORIUM\n";
